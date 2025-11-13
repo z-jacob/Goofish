@@ -3,10 +3,11 @@
 //
 
 #pragma once
+#include "Helper/JFramework.h"
 
 
 // CGoofishDlg 对话框
-class CGoofishDlg : public CDialog
+class CGoofishDlg : public CDialog,public JFramework::AbstractController
 {
 // 构造
 public:
@@ -17,11 +18,17 @@ public:
 	enum { IDD = IDD_GOOFISH_DIALOG };
 #endif
 
-	protected:
+
+	std::weak_ptr<JFramework::IArchitecture> GetArchitecture() const override;
+
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
 
-// 实现
+
+	void OnEvent(std::shared_ptr<JFramework::IEvent> event) override;
+
+	// 实现
 protected:
 	HICON m_hIcon;
 

@@ -11,6 +11,8 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#include "GoofishArchitecture.h"
+#include "System/WebsocketClientSystem.h"
 
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
@@ -56,9 +58,19 @@ CGoofishDlg::CGoofishDlg(CWnd* pParent /*=nullptr*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
+std::weak_ptr<JFramework::IArchitecture> CGoofishDlg::GetArchitecture() const
+{
+	return GoofishArchitecture::Instance();
+}
+
 void CGoofishDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+}
+
+void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
+{
+
 }
 
 BEGIN_MESSAGE_MAP(CGoofishDlg, CDialog)
@@ -100,6 +112,8 @@ BOOL CGoofishDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+
+	this->GetSystem<WebsocketClientSystem>();
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
