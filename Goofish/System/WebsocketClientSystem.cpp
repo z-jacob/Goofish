@@ -1,86 +1,65 @@
 #include "WebsocketClientSystem.h"
-
-#include "../Helper/SimpleWSSClient.h"
 #include <iostream>
 
 bool WebsocketClientSystem::Connect(const std::string& host, unsigned short port, const std::string& target, bool use_ssl)
 {
-    try
-    {
-        // 如果已有连接，先关闭
-        if (client_)
-        {
-            client_->Close();
-            client_.reset();
-        }
+    // 将端口转为字符串并尝试连接
+    const std::string port_str = std::to_string(port);
+    // 若需要自定义 CA bundle，请修改此处或扩展接口以传入 ca_file
+    const std::string ca_file = "cacert.pem";
 
-        client_ = std::make_shared<AsyncWSSClient>();
-
-        // 应用预设回调（若已设置）
-        if (pending_message_handler_)
-            client_->set_message_handler(pending_message_handler_);
-        if (pending_close_handler_)
-            client_->set_close_handler(pending_close_handler_);
-
-        // AsyncWSSClient::Connect 返回 bool 表示是否成功完成握手并启动接收线程
-        bool ok = client_->Connect(host, port, target, use_ssl);
-        if (!ok)
-        {
-            // 连接失败，清理 client_
-            client_.reset();
-        }
-        return ok;
-    }
-    catch (const std::exception& e)
-    {
-        std::cerr << "WebsocketClientSystem::Connect exception: " << e.what() << std::endl;
+    // 这里将 Connect 的 use_ssl 参数映射为 websocket_client.connect 的 verify_peer 参数。
+    // websocket_client 会根据 host/port 自动检测是否使用 SSL。
+    if (!client.connect(host, port_str, target, use_ssl, ca_file)) {
+        std::cerr << "connect failed" << std::endl;
         return false;
     }
+
+    client.start_read_loop();
+    return true;
 }
 
 void WebsocketClientSystem::Send(const std::string& msg)
 {
-    if (client_)
-    {
-        client_->Send(msg);
+    if (!client.is_connected()) {
+        std::cerr << "Send failed: not connected" << std::endl;
+        return;
     }
-    else
-    {
-        std::cerr << "WebsocketClientSystem::Send: client not connected\n";
+
+    if (!client.send_text(msg)) {
+        std::cerr << "send_text failed" << std::endl;
     }
 }
 
 void WebsocketClientSystem::Close()
 {
-    if (client_)
-    {
-        client_->Close();
-        client_.reset();
-    }
+    client.disconnect();
 }
 
-void WebsocketClientSystem::SetMessageHandler(AsyncWSSClient::MessageHandler handler)
-{
-    pending_message_handler_ = std::move(handler);
-    if (client_)
-        client_->set_message_handler(pending_message_handler_);
-}
-
-void WebsocketClientSystem::SetCloseHandler(AsyncWSSClient::CloseHandler handler)
-{
-    pending_close_handler_ = std::move(handler);
-    if (client_)
-        client_->set_close_handler(pending_close_handler_);
-}
 
 void WebsocketClientSystem::OnInit()
 {
-    // 按需在系统初始化时自动连接；当前不自动连接，外部调用 Connect(...)
+	// 设置回调
+	client.set_connection_callback([](bool connected) {
+		std::cout << "[connection] " << (connected ? "connected" : "disconnected") << std::endl;
+		});
+
+	client.set_error_callback([](const std::string& err) {
+		std::cerr << "[error] " << err << std::endl;
+		});
+
+	client.set_message_callback([](const std::string& msg, bool is_binary) {
+		if (is_binary) {
+			std::cout << "[message binary] size=" << msg.size() << std::endl;
+		}
+		else {
+			std::cout << "[message text] " << msg << std::endl;
+		}
+		});
 }
 
 void WebsocketClientSystem::OnDeinit()
 {
-    // 优雅关闭
     Close();
 }
 

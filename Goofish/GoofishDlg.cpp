@@ -2,20 +2,22 @@
 // GoofishDlg.cpp: 实现文件
 //
 
-#include "pch.h"
 #include "framework.h"
 #include "Goofish.h"
 #include "GoofishDlg.h"
 #include "afxdialogex.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
 #include "GoofishArchitecture.h"
 #include "System/WebsocketClientSystem.h"
 
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
+
 
 class CAboutDlg : public CDialog
 {
@@ -77,10 +79,13 @@ BEGIN_MESSAGE_MAP(CGoofishDlg, CDialog)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BUTTON1, &CGoofishDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON2, &CGoofishDlg::OnBnClickedButton2)
 END_MESSAGE_MAP()
 
 
 // CGoofishDlg 消息处理程序
+
 
 BOOL CGoofishDlg::OnInitDialog()
 {
@@ -110,10 +115,6 @@ BOOL CGoofishDlg::OnInitDialog()
 	//  执行此操作
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
-
-	// TODO: 在此添加额外的初始化代码
-
-	this->GetSystem<WebsocketClientSystem>();
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -167,3 +168,52 @@ HCURSOR CGoofishDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+void CGoofishDlg::OnBnClickedButton1()
+{
+
+	// 替换为你的服务器地址、端口和 target（path）
+	const std::string host = "wss://echo.websocket.org";
+
+	try {
+		auto wsSystem = GetSystem<WebsocketClientSystem>();
+		if (!wsSystem) {
+			AfxMessageBox(_T("无法获取 WebsocketClientSystem 实例"));
+			return;
+		}
+
+		bool use_ssl = true; // 根据需要调整
+		if (!wsSystem->Connect(host, 443, "/", use_ssl)) {
+			AfxMessageBox(_T("WebSocket 连接失败（检查输出/日志获取详细信息）"));
+			return;
+		}
+
+		AfxMessageBox(_T("WebSocket 已连接（已启动读取循环）"));
+	}
+	catch (const std::exception& /*e*/) {
+		// GetSystem 可能抛出 ComponentNotRegisteredException 等
+		AfxMessageBox(_T("获取或调用 WebsocketClientSystem 失败，请检查架构注册"));
+	}
+
+}
+
+void CGoofishDlg::OnBnClickedButton2()
+{
+	// TODO: 在此添加控件通知处理程序代码
+
+
+	try {
+		auto wsSystem = GetSystem<WebsocketClientSystem>();
+		if (!wsSystem) {
+			AfxMessageBox(_T("无法获取 WebsocketClientSystem 实例"));
+			return;
+		}
+
+
+		wsSystem->Send("Hello, WebSocket!");
+	}
+	catch (const std::exception& /*e*/) {
+		// GetSystem 可能抛出 ComponentNotRegisteredException 等
+		AfxMessageBox(_T("获取或调用 WebsocketClientSystem 失败，请检查架构注册"));
+	}
+}

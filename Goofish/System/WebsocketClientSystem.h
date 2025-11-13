@@ -1,6 +1,7 @@
 #pragma once
 #include "../Helper/JFramework.h"
-#include "../Helper/SimpleWSSClient.h"
+#include "../Helper/websocket_client.h"
+
 #include <memory>
 #include <string>
 
@@ -12,17 +13,12 @@ public:
     void Send(const std::string& msg);
     void Close();
 
-    void SetMessageHandler(AsyncWSSClient::MessageHandler handler);
-    void SetCloseHandler(AsyncWSSClient::CloseHandler handler);
-
 protected:
     void OnInit() override;
     void OnDeinit() override;
     void OnEvent(std::shared_ptr<JFramework::IEvent> event) override;
 
 private:
-    std::shared_ptr<AsyncWSSClient> client_;
-    AsyncWSSClient::MessageHandler pending_message_handler_;
-    AsyncWSSClient::CloseHandler pending_close_handler_;
+    websocket_chat::WebSocketClient client;
 };
 
