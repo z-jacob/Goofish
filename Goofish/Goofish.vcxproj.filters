@@ -45,6 +45,9 @@
     <ClInclude Include="Helper\WebsocketEvents.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Helper\ProcessHelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Goofish.cpp">

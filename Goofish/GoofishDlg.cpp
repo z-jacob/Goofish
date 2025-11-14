@@ -8,46 +8,13 @@
 #include "afxdialogex.h"
 #include "GoofishArchitecture.h"
 #include "System/WebsocketClientSystem.h"
+#include "Helper/WebsocketEvents.h"
+#include "Helper/ProcessHelper.h"
 
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
-
-
-// 用于应用程序“关于”菜单项的 CAboutDlg 对话框
-
-
-class CAboutDlg : public CDialog
-{
-public:
-	CAboutDlg();
-
-	// 对话框数据
-#ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_ABOUTBOX };
-#endif
-
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
-
-	// 实现
-protected:
-	DECLARE_MESSAGE_MAP()
-};
-
-CAboutDlg::CAboutDlg() : CDialog(IDD_ABOUTBOX)
-{
-}
-
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-END_MESSAGE_MAP()
 
 
 // CGoofishDlg 对话框
@@ -68,19 +35,16 @@ std::weak_ptr<JFramework::IArchitecture> CGoofishDlg::GetArchitecture() const
 void CGoofishDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-}
-
-void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
-{
-
+	DDX_Control(pDX, IDC_LIST_LOG, m_listLog);
 }
 
 BEGIN_MESSAGE_MAP(CGoofishDlg, CDialog)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTON1, &CGoofishDlg::OnBnClickedButton1)
-	ON_BN_CLICKED(IDC_BUTTON2, &CGoofishDlg::OnBnClickedButton2)
+	ON_WM_CLOSE()
+	ON_BN_CLICKED(IDC_BUTTON_CONNECT, &CGoofishDlg::OnBnClickedButtonConnect)
+	ON_BN_CLICKED(IDC_BUTTON_SEND, &CGoofishDlg::OnBnClickedButtonSend)
 END_MESSAGE_MAP()
 
 
@@ -91,45 +55,23 @@ BOOL CGoofishDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	// 将“关于...”菜单项添加到系统菜单中。
-
-	// IDM_ABOUTBOX 必须在系统命令范围内。
-	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
-	ASSERT(IDM_ABOUTBOX < 0xF000);
-
-	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if (pSysMenu != nullptr)
-	{
-		BOOL bNameValid;
-		CString strAboutMenu;
-		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
-		ASSERT(bNameValid);
-		if (!strAboutMenu.IsEmpty())
-		{
-			pSysMenu->AppendMenu(MF_SEPARATOR);
-			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
-		}
-	}
 
 	// 设置此对话框的图标。  当应用程序主窗口不是对话框时，框架将自动
 	//  执行此操作
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
+	this->RegisterEvent<WebsocketConnectionEvent>(this);
+	this->RegisterEvent<WebsocketErrorEvent>(this);
+	this->RegisterEvent<WebsocketReceiveEvent>(this);
+	this->RegisterEvent<WebsocketDisconnectionEvent>(this);
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
 void CGoofishDlg::OnSysCommand(UINT nID, LPARAM lParam)
 {
-	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
-	{
-		CAboutDlg dlgAbout;
-		dlgAbout.DoModal();
-	}
-	else
-	{
-		CDialog::OnSysCommand(nID, lParam);
-	}
+	CDialog::OnSysCommand(nID, lParam);
 }
 
 // 如果向对话框添加最小化按钮，则需要下面的代码
@@ -168,48 +110,54 @@ HCURSOR CGoofishDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
-void CGoofishDlg::OnBnClickedButton1()
+void CGoofishDlg::OnClose()
 {
-	try {
-		auto wsSystem = GetSystem<WebsocketClientSystem>();
-		if (!wsSystem) {
-			AfxMessageBox(_T("无法获取 WebsocketClientSystem 实例"));
-			return;
-		}
+	
+	KillSelfProcess();
 
-		bool use_ssl = true; // 根据需要调整
-		if (!wsSystem->Connect("wss://echo.websocket.org")) {
-			AfxMessageBox(_T("WebSocket 连接失败（检查输出/日志获取详细信息）"));
-			return;
-		}
-
-		AfxMessageBox(_T("WebSocket 已连接（已启动读取循环）"));
-	}
-	catch (const std::exception& /*e*/) {
-		// GetSystem 可能抛出 ComponentNotRegisteredException 等
-		AfxMessageBox(_T("获取或调用 WebsocketClientSystem 失败，请检查架构注册"));
-	}
-
+	__super::OnClose();
 }
 
-void CGoofishDlg::OnBnClickedButton2()
+
+void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 {
-	// TODO: 在此添加控件通知处理程序代码
+	if (auto e = std::dynamic_pointer_cast<WebsocketConnectionEvent>(event))
+	{
+		m_listLog.AddString("Websocket Connect.");
+	}
+	else if (auto e = std::dynamic_pointer_cast<WebsocketErrorEvent>(event))
+	{
+		auto message = "Websocket Error: " + e->m_errorMessage;
+		m_listLog.AddString(message.c_str());
+	}
+	else if (auto e = std::dynamic_pointer_cast<WebsocketReceiveEvent>(event))
+	{
 
+		auto message = "Websocket Receive: " + e->m_message;
+		m_listLog.AddString(message.c_str());
+	}
+	else if (auto e = std::dynamic_pointer_cast<WebsocketDisconnectionEvent>(event))
+	{
+		//m_listLog.AddString("Websocket Disconnect.");
+	}
+}
 
+void CGoofishDlg::OnBnClickedButtonConnect()
+{
 	try {
 		auto wsSystem = GetSystem<WebsocketClientSystem>();
-		if (!wsSystem) {
-			AfxMessageBox(_T("无法获取 WebsocketClientSystem 实例"));
-			return;
-		}
-
-
-		wsSystem->Send("Hello, WebSocket!");
+		wsSystem->Connect("wss://echo.websocket.org");
 	}
 	catch (const std::exception& /*e*/) {
-		// GetSystem 可能抛出 ComponentNotRegisteredException 等
-		AfxMessageBox(_T("获取或调用 WebsocketClientSystem 失败，请检查架构注册"));
+	}
+}
+
+void CGoofishDlg::OnBnClickedButtonSend()
+{
+	try {
+		auto wsSystem = GetSystem<WebsocketClientSystem>();
+		wsSystem->Send("Hello Goofish!");
+	}
+	catch (const std::exception& /*e*/) {
 	}
 }

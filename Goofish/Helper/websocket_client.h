@@ -20,7 +20,8 @@ class WebSocketClient {
 public:
     using MessageCallback = std::function<void(const std::string&, bool)>; 
     using ErrorCallback = std::function<void(const std::string&)>;
-    using ConnectionCallback = std::function<void(bool)>; 
+    using ConnectionCallback = std::function<void()>;
+    using DisconnectionCallback = std::function<void()>;
 
     WebSocketClient();
     ~WebSocketClient();
@@ -36,13 +37,15 @@ public:
     void set_message_callback(MessageCallback callback) { message_callback_ = std::move(callback); }
     void set_error_callback(ErrorCallback callback) { error_callback_ = std::move(callback); }
     void set_connection_callback(ConnectionCallback callback) { connection_callback_ = std::move(callback); }
+    void set_disconnection_callback(DisconnectionCallback callback) { disconnection_callback_ = std::move(callback); }
     
     void start_read_loop();
 
 private:
     void handle_message(boost::beast::error_code ec, std::size_t bytes_transferred);
     void notify_error(const std::string& error);
-    void notify_connection_status(bool connected);
+    void notify_connection();
+    void notify_disconnection();
 
     boost::asio::io_context ioc_;
     boost::asio::ssl::context ssl_ctx_;
@@ -56,7 +59,7 @@ private:
     MessageCallback message_callback_;
     ErrorCallback error_callback_;
     ConnectionCallback connection_callback_;
-    
+    DisconnectionCallback disconnection_callback_;
     std::thread io_thread_;
     std::atomic<bool> should_stop_;
 };

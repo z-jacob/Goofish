@@ -114,9 +114,13 @@ void WebsocketClientSystem::Close()
 void WebsocketClientSystem::OnInit()
 {
 	try {
-		client.set_connection_callback([this](bool connected) {
-			this->SendEvent<WebsocketConnectionEvent>(connected);
+		client.set_connection_callback([this]() {
+			this->SendEvent<WebsocketConnectionEvent>();
 		});
+
+		client.set_disconnection_callback([this]() {
+			this->SendEvent<WebsocketDisconnectionEvent>();
+			});
 
 		client.set_error_callback([this](const std::string& err) {
 			this->SendEvent<WebsocketErrorEvent>(err);
