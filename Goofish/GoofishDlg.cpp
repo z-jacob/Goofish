@@ -24,15 +24,15 @@ class CAboutDlg : public CDialog
 public:
 	CAboutDlg();
 
-// 对话框数据
+	// 对话框数据
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_ABOUTBOX };
 #endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
 
-// 实现
+	// 实现
 protected:
 	DECLARE_MESSAGE_MAP()
 };
@@ -171,10 +171,6 @@ HCURSOR CGoofishDlg::OnQueryDragIcon()
 
 void CGoofishDlg::OnBnClickedButton1()
 {
-
-	// 替换为你的服务器地址、端口和 target（path）
-	const std::string host = "wss://echo.websocket.org";
-
 	try {
 		auto wsSystem = GetSystem<WebsocketClientSystem>();
 		if (!wsSystem) {
@@ -183,7 +179,7 @@ void CGoofishDlg::OnBnClickedButton1()
 		}
 
 		bool use_ssl = true; // 根据需要调整
-		if (!wsSystem->Connect(host, 443, "/", use_ssl)) {
+		if (!wsSystem->Connect("wss://echo.websocket.org")) {
 			AfxMessageBox(_T("WebSocket 连接失败（检查输出/日志获取详细信息）"));
 			return;
 		}
