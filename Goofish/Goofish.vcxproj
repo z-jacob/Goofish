@@ -192,6 +192,7 @@
     <ClInclude Include="GoofishArchitecture.h" />
     <ClInclude Include="GoofishDlg.h" />
     <ClInclude Include="Helper\JFramework.h" />
+    <ClInclude Include="Helper\Logger.h" />
     <ClInclude Include="Helper\ProcessHelper.h" />
     <ClInclude Include="Helper\WebsocketEvents.h" />
     <ClInclude Include="Helper\websocket_client.h" />
@@ -203,6 +204,7 @@
     <ClCompile Include="Goofish.cpp" />
     <ClCompile Include="GoofishArchitecture.cpp" />
     <ClCompile Include="GoofishDlg.cpp" />
+    <ClCompile Include="Helper\Logger.cpp" />
     <ClCompile Include="Helper\websocket_client.cpp" />
     <ClCompile Include="System\WebsocketClientSystem.cpp" />
   </ItemGroup>

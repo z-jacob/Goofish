@@ -1,5 +1,4 @@
-﻿
-// GoofishDlg.cpp: 实现文件
+﻿// GoofishDlg.cpp: 实现文件
 //
 
 #include "framework.h"
@@ -10,6 +9,7 @@
 #include "System/WebsocketClientSystem.h"
 #include "Helper/WebsocketEvents.h"
 #include "Helper/ProcessHelper.h"
+#include "Helper/Logger.h"
 
 
 #ifdef _DEBUG
@@ -65,6 +65,15 @@ BOOL CGoofishDlg::OnInitDialog()
 	this->RegisterEvent<WebsocketErrorEvent>(this);
 	this->RegisterEvent<WebsocketReceiveEvent>(this);
 	this->RegisterEvent<WebsocketDisconnectionEvent>(this);
+
+	// 初始化 Logger（可选写入文件）
+	//Logger::Init("goofish.log");
+
+	// 注册回调，将格式化日志显示到列表中
+	// 注意：如果事件来自后台线程，请改为使用 PostMessage 将字符串发送到 UI 线程再调用 AddString
+	Logger::SetCallback([this](const std::string& formatted) {
+		m_listLog.AddString(formatted.c_str());
+	});
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -123,22 +132,23 @@ void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 {
 	if (auto e = std::dynamic_pointer_cast<WebsocketConnectionEvent>(event))
 	{
-		m_listLog.AddString("Websocket Connect.");
+		Logger::Log(Logger::Level::Info, "Websocket Connect.");
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketErrorEvent>(event))
 	{
 		auto message = "Websocket Error: " + e->m_errorMessage;
-		m_listLog.AddString(message.c_str());
+		Logger::Log(Logger::Level::Error, message);
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketReceiveEvent>(event))
 	{
 
 		auto message = "Websocket Receive: " + e->m_message;
-		m_listLog.AddString(message.c_str());
+		Logger::Log(Logger::Level::Info, message);
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketDisconnectionEvent>(event))
 	{
 		//m_listLog.AddString("Websocket Disconnect.");
+		Logger::Log(Logger::Level::Warning, "Websocket Disconnect.");
 	}
 }
 
