@@ -156,7 +156,8 @@ void CGoofishDlg::OnBnClickedButtonConnect()
 {
 	try {
 		auto wsSystem = GetSystem<WebsocketClientSystem>();
-		wsSystem->Connect("wss://echo.websocket.org");
+
+		wsSystem->Connect("wss://wss-goofish.dingtalk.com/");
 	}
 	catch (const std::exception& /*e*/) {
 	}
