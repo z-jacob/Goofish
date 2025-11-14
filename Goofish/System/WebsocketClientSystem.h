@@ -10,7 +10,7 @@ class WebsocketClientSystem : public JFramework::AbstractSystem
 public:
     // 外部接口
     bool Connect(const std::string& host, unsigned short port, const std::string& target = "/", bool use_ssl = true);
-    void Send(const std::string& msg);
+    bool Send(const std::string& msg);
     void Close();
 
 protected:
