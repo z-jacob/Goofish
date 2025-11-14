@@ -192,6 +192,7 @@
     <ClInclude Include="GoofishArchitecture.h" />
     <ClInclude Include="GoofishDlg.h" />
     <ClInclude Include="Helper\JFramework.h" />
+    <ClInclude Include="Helper\WebsocketEvents.h" />
     <ClInclude Include="Helper\websocket_client.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />

@@ -41,8 +41,6 @@ public:
 
 private:
     void handle_message(boost::beast::error_code ec, std::size_t bytes_transferred);
-    void handle_ssl_handshake(boost::beast::error_code ec);
-    void handle_websocket_handshake(boost::beast::error_code ec);
     void notify_error(const std::string& error);
     void notify_connection_status(bool connected);
 
