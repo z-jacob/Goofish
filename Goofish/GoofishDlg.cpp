@@ -182,22 +182,15 @@ void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 {
 	if (auto e = std::dynamic_pointer_cast<WebsocketConnectionEvent>(event))
 	{
-		LOG_INFO(MODULE_INFO + "Websocket Connect.");
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketErrorEvent>(event))
 	{
-		auto message = "Websocket Error: " + e->m_errorMessage;
-		LOG_ERROR(message);
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketReceiveEvent>(event))
 	{
-		auto message = MODULE_INFO + "Websocket Receive: " + e->m_message;
-		LOG_INFO(message);
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketDisconnectionEvent>(event))
 	{
-		//m_listLog.AddString("Websocket Disconnect.");
-		LOG_WARNING(MODULE_INFO + "Websocket Disconnect.");
 		m_state = ControllerState::Stopped;
 	}
 }

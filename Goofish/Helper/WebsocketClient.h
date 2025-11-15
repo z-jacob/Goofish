@@ -61,7 +61,6 @@ private:
     ConnectionCallback connection_callback_;
     DisconnectionCallback disconnection_callback_;
 
-    void NotifyError(const std::string& error);
     void NotifyConnection();
     void NotifyDisconnection();
     void NotifyMessage(const std::string& message, bool is_binary);

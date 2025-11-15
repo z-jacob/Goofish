@@ -115,9 +115,6 @@ protected:
     bool Connect(const std::string& host, unsigned short port, const std::string& target = "/", bool use_ssl = true);
 
 private:
-    // 统一错误发送（封装为成员，避免重复 lambda）
-    void SendError(const std::string& msg);
-
     // CA 文件路径，可通过构造函数配置（便于测试/运行时替换）
     std::string ca_file_;
 

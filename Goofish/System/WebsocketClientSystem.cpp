@@ -6,6 +6,7 @@
 #include <optional>
 #include "../Helper/WebsocketEvents.h"
 #include "../Helper/Utils.h"
+#include "../Helper/Logger.h"
 
 /**
  * @file WebsocketClientSystem.cpp
@@ -80,30 +81,14 @@ WebsocketClientSystem::WebsocketClientSystem(const std::string& ca_file) noexcep
 {
 }
 
-void WebsocketClientSystem::SendError(const std::string& msg)
-{
-	// 直接派发错误事件；某些错误也可能在系统未初始化前发生，
-	// 因此此处不检查 initialized_，由回调处进行保护（如果需要）。
-	this->SendEvent<WebsocketErrorEvent>(msg);
-}
-
 bool WebsocketClientSystem::Connect(const std::string& host, unsigned short port, const std::string& target, bool use_ssl)
 {
 	const std::string port_str = std::to_string(port);
-
-	try {
-		// 调用底层 client.connect（connect 会在内部启动 io 线程并在握手成功后触发回调）
-		if (!client.Connect(host, port_str, target, use_ssl, ca_file_)) {
-			SendError(MODULE_INFO + "[WebsocketClientSystem] Connect failed: Unable to connect to " + host + ":" + std::to_string(port));
-			return false;
-		}
-
-		return true;
-	}
-	catch (const std::exception& ex) {
-		SendError(MODULE_INFO + std::string("[WebsocketClientSystem] Connect exception: ") + ex.what());
+	// 调用底层 client.connect（connect 会在内部启动 io 线程并在握手成功后触发回调）
+	if (!client.Connect(host, port_str, target, use_ssl, ca_file_)) {
 		return false;
 	}
+	return true;
 }
 
 bool WebsocketClientSystem::Connect(const std::string& path)
@@ -111,14 +96,14 @@ bool WebsocketClientSystem::Connect(const std::string& path)
 	try {
 		auto parsed = ParseWebsocketUrl(path);
 		if (!parsed) {
-			SendError(MODULE_INFO + std::string("[WebsocketClientSystem] Connect(path) parse failed: invalid format: ") + path);
+			LOG_ERROR(MODULE_INFO + std::string("Connect(path) parse failed: invalid format: ") + path);
 			return false;
 		}
 
 		return Connect(parsed->host, parsed->port, parsed->target, parsed->use_ssl);
 	}
 	catch (const std::exception& ex) {
-		SendError(MODULE_INFO + std::string("[WebsocketClientSystem] Connect(path) exception: ") + ex.what());
+		LOG_ERROR(MODULE_INFO + std::string("Connect(path) exception: ") + ex.what());
 		return false;
 	}
 }
@@ -126,20 +111,13 @@ bool WebsocketClientSystem::Connect(const std::string& path)
 bool WebsocketClientSystem::Send(const std::string& msg)
 {
 	if (!client.IsConnected()) {
-		SendError(MODULE_INFO + "[WebsocketClientSystem] Send failed: not connected");
+		LOG_ERROR(MODULE_INFO + "Send failed: not connected");
 		return false;
 	}
-	try {
-		if (!client.SendText(msg)) {
-			SendError(MODULE_INFO + "[WebsocketClientSystem] send_text failed");
-			return false;
-		}
-		return true;
-	}
-	catch (const std::exception& ex) {
-		SendError(MODULE_INFO + std::string("[WebsocketClientSystem] Send exception: ") + ex.what());
+	if (!client.SendText(msg)) {
 		return false;
 	}
+	return true;
 }
 
 void WebsocketClientSystem::Close()
@@ -149,7 +127,7 @@ void WebsocketClientSystem::Close()
 		client.Disconnect();
 	}
 	catch (const std::exception& ex) {
-		SendError(MODULE_INFO + std::string("[WebsocketClientSystem] Close exception: ") + ex.what());
+		LOG_ERROR(MODULE_INFO + std::string("Close exception: ") + ex.what());
 	}
 }
 
@@ -160,7 +138,7 @@ void WebsocketClientSystem::Receive()
 		client.Receive();
 	}
 	catch (const std::exception& ex) {
-		SendError(MODULE_INFO + std::string("[WebsocketClientSystem] Receive exception: ") + ex.what());
+		LOG_ERROR(MODULE_INFO + std::string("Receive exception: ") + ex.what());
 	}
 }
 
@@ -171,7 +149,7 @@ bool WebsocketClientSystem::IsConnected()
 		return client.IsConnected();
 	}
 	catch (const std::exception& ex) {
-		SendError(MODULE_INFO + std::string("[WebsocketClientSystem] IsConnected exception: ") + ex.what());
+		LOG_ERROR(MODULE_INFO + std::string("IsConnected exception: ") + ex.what());
 	}
 	return false;
 }
@@ -193,23 +171,14 @@ void WebsocketClientSystem::OnInit()
 			this->SendEvent<WebsocketDisconnectionEvent>();
 			});
 
-		client.SetErrorCallback([this](const std::string& err) {
-			// 错误可能发生在连接前/过程中，仍派发以便上层感知
-			if (!initialized_.load(std::memory_order_acquire)) {
-				// 若尚未初始化，仍派发错误以便诊断
-				SendError(MODULE_INFO + err);
-				return;
-			}
-			SendError(MODULE_INFO + err);
-			});
-
 		client.SetMessageCallback([this](const std::string& msg, bool is_binary) {
 			if (!initialized_.load(std::memory_order_acquire)) return;
+
 			this->SendEvent<WebsocketReceiveEvent>(msg, is_binary);
 			});
 	}
 	catch (const std::exception& ex) {
-		SendError(MODULE_INFO + std::string("[WebsocketClientSystem] OnInit exception: ") + ex.what());
+		LOG_ERROR(MODULE_INFO + std::string("OnInit exception: ") + ex.what());
 	}
 }
 

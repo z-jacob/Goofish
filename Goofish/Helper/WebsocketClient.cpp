@@ -1,6 +1,7 @@
 #include "WebsocketClient.h"
 
 #include "Utils.h"
+#include "Logger.h"
 
 
 namespace beast = boost::beast;
@@ -52,7 +53,7 @@ namespace websocket_chat {
 		bool verify_peer, const std::string& ca_file) {
 
 		if (connected_) {
-			NotifyError(MODULE_INFO + "Already connected");
+			LOG_ERROR(MODULE_INFO + "Already connected");
 			return false;
 		}
 
@@ -99,7 +100,7 @@ namespace websocket_chat {
 					boost::system::error_code ec;
 					ssl_ctx_.load_verify_file(ca_file, ec);
 					if (ec) {
-						NotifyError(MODULE_INFO + std::string("Failed to load CA file: ") + ca_file + " -> " + ec.message());
+						LOG_ERROR(MODULE_INFO + std::string("Failed to load CA file: ") + ca_file + " -> " + ec.message());
 					}
 				}
 				else {
@@ -119,7 +120,7 @@ namespace websocket_chat {
 			if (use_ssl_) {
 				ws_ssl_ = std::make_unique<websocket::stream<beast::ssl_stream<tcp::socket>>>(ioc_, ssl_ctx_);
 				if (!SSL_set_tlsext_host_name(ws_ssl_->next_layer().native_handle(), host_only.c_str())) {
-					NotifyError(MODULE_INFO + "Failed to set SNI hostname");
+					LOG_ERROR(MODULE_INFO + "Failed to set SNI hostname");
 					return false;
 				}
 				net::connect(ws_ssl_->next_layer().next_layer(), results);
@@ -143,11 +144,12 @@ namespace websocket_chat {
 			}
 
 			connected_ = true;
+			LOG_INFO(MODULE_INFO + "Websocket Connection");
 			NotifyConnection();
 			return true;
 		}
 		catch (const std::exception& e) {
-			NotifyError(MODULE_INFO + std::string("Connection failed: ") + e.what());
+			LOG_ERROR(MODULE_INFO + std::string("Connection failed: ") + e.what());
 			connected_ = false;
 			return false;
 		}
@@ -165,7 +167,7 @@ namespace websocket_chat {
 	 */
 	bool WebSocketClient::SendText(const std::string& message) {
 		if (!connected_) {
-			NotifyError(MODULE_INFO + "Not connected to server");
+			LOG_ERROR(MODULE_INFO + "Not connected to server");
 			return false;
 		}
 		try {
@@ -180,7 +182,7 @@ namespace websocket_chat {
 			return true;
 		}
 		catch (const std::exception& e) {
-			NotifyError(MODULE_INFO + std::string("SendText exception: ") + e.what());
+			LOG_ERROR(MODULE_INFO + std::string("SendText exception: ") + e.what());
 			return false;
 		}
 	}
@@ -195,7 +197,7 @@ namespace websocket_chat {
 	 */
 	bool WebSocketClient::SendBinary(const std::vector<uint8_t>& data) {
 		if (!connected_) {
-			NotifyError(MODULE_INFO + "Not connected to server");
+			LOG_ERROR(MODULE_INFO + "Not connected to server");
 			return false;
 		}
 		try {
@@ -210,7 +212,7 @@ namespace websocket_chat {
 			return true;
 		}
 		catch (const std::exception& e) {
-			NotifyError(MODULE_INFO + std::string("SendBinary exception: ") + e.what());
+			LOG_ERROR(MODULE_INFO + std::string("SendBinary exception: ") + e.what());
 			return false;
 		}
 	}
@@ -239,20 +241,8 @@ namespace websocket_chat {
 		ws_plain_.reset();
 		ws_ssl_.reset();
 		connected_ = false;
+		LOG_WARNING(MODULE_INFO + "Websocket Disconnection");
 		NotifyDisconnection();
-	}
-
-	/**
-	 * @brief 错误通知适配器
-	 *
-	 * 直接调用用户提供的 error_callback_（回调在 IO 线程执行）。
-	 * 如果需要在 UI 线程处理，应由回调实现方负责线程切换。
-	 */
-	void WebSocketClient::NotifyError(const std::string& error) {
-		// 回调直接调用（通常在 IO 线程）。如果需要在 UI 线程调用，外部应在回调中切换。
-		if (error_callback_) {
-			error_callback_(error);
-		}
 	}
 
 	/**
@@ -300,27 +290,27 @@ namespace websocket_chat {
 				is_binary = ws_plain_->got_binary();
 			}
 			out_message = beast::buffers_to_string(buffer.data());
+			LOG_INFO(MODULE_INFO + "Received message: " + out_message);
 			NotifyMessage(out_message, is_binary);
 			return true;
 		}
 		catch (const beast::system_error& e) {
 			// 检查是否为 EOF（服务器断开）
 			if (e.code() == net::error::eof) {
-				NotifyError(MODULE_INFO +
-					"Server closed connection (EOF)");
+				LOG_ERROR(MODULE_INFO +"Server closed connection (EOF)");
 				ws_plain_.reset();
 				ws_ssl_.reset();
 				connected_ = false;
 				NotifyDisconnection();
 			}
 			else {
-				NotifyError(MODULE_INFO + std::string("Receive exception: ") + e.what());
+				LOG_ERROR(MODULE_INFO + std::string("Receive exception: ") + e.what());
 				connected_ = false;
 			}
 			return false;
 		}
 		catch (const std::exception& e) {
-			NotifyError(MODULE_INFO + std::string("Receive exception: ") + e.what());
+			LOG_ERROR(MODULE_INFO + std::string("Receive exception: ") + e.what());
 			ws_plain_.reset();
 			ws_ssl_.reset();
 			connected_ = false;
