@@ -88,12 +88,6 @@ BOOL CGoofishDlg::OnInitDialog()
 		// 创建封装的 tab 控件（内部创建 CTabCtrlEx）
 		m_tabManager.Create(this, IDC_TAB_CTRL, rc);
 
-		// 设置字体
-		if (!m_tabFont.GetSafeHandle()) {
-			m_tabFont.CreatePointFont(100, _T("Microsoft YaHei"));
-		}
-		m_tabManager.SetFont(&m_tabFont);
-
 		// 添加页面（使用你已有的页面类）
 		m_tabManager.AddPage(std::make_unique<CDashboardPage>(), _T("仪表盘"));
 		m_tabManager.AddPage(std::make_unique<CAccountPage>(), _T("账号管理"));

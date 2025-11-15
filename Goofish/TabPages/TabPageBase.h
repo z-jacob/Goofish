@@ -38,7 +38,8 @@ public:
 		MoveWindow(&rc);
 		CRect rcClient;
 		GetClientRect(&rcClient);
-		if (m_stLabel.GetSafeHwnd()) m_stLabel.MoveWindow(&rcClient);
+		if (m_stLabel.GetSafeHwnd())
+			m_stLabel.MoveWindow(&rcClient);
 	}
 
 protected:

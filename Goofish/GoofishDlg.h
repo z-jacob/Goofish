@@ -34,7 +34,6 @@ protected:
 protected:
 	HICON m_hIcon;
 	CTabManager m_tabManager;   // 新：封装后的 Tab 管理器
-	CFont m_tabFont;            // 保持字体对象生命周期
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
