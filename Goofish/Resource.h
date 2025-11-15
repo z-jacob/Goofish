@@ -9,7 +9,7 @@
 #define IDC_BUTTON_CONNECT              1000
 #define IDC_BUTTON_SEND                 1001
 #define IDC_LIST_LOG                    1002
-
+#define IDC_TAB_CTRL					1003
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

@@ -31,13 +31,12 @@ protected:
 	// 实现
 protected:
 	HICON m_hIcon;
+	CTabCtrl m_tabCtrl;
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnClose();
-	afx_msg void OnBnClickedButtonConnect();
-	CListBox m_listLog;
-	afx_msg void OnBnClickedButtonSend();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 };

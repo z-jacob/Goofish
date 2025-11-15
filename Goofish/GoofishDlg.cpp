@@ -35,13 +35,11 @@ std::weak_ptr<JFramework::IArchitecture> CGoofishDlg::GetArchitecture() const
 void CGoofishDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_LIST_LOG, m_listLog);
 }
 
 BEGIN_MESSAGE_MAP(CGoofishDlg, CDialog)
 	ON_WM_CLOSE()
-	ON_BN_CLICKED(IDC_BUTTON_CONNECT, &CGoofishDlg::OnBnClickedButtonConnect)
-	ON_BN_CLICKED(IDC_BUTTON_SEND, &CGoofishDlg::OnBnClickedButtonSend)
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -63,14 +61,36 @@ BOOL CGoofishDlg::OnInitDialog()
 	this->RegisterEvent<WebsocketReceiveEvent>(this);
 	this->RegisterEvent<WebsocketDisconnectionEvent>(this);
 
-	// 初始化 Logger（可选写入文件）
-	//Logger::Init("goofish.log");
 
-	// 注册回调，将格式化日志显示到列表中
-	// 注意：如果事件来自后台线程，请改为使用 PostMessage 将字符串发送到 UI 线程再调用 AddString
-	Logger::SetCallback([this](const std::string& formatted) {
-		m_listLog.AddString(formatted.c_str());
-		});
+
+	// ---- 在代码中创建 Tab 控件 ----
+	{
+		CRect rc;
+		GetClientRect(&rc);
+		rc.DeflateRect(8, 8); // 边距，可根据需要调整
+
+		// 样式：可见、子窗口、选项卡、热跟踪、防止重绘冲突等
+		DWORD style = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | TCS_TABS | TCS_HOTTRACK;
+		m_tabCtrl.Create(style, rc, this, IDC_TAB_CTRL);
+
+		// 添加示例页签
+		m_tabCtrl.InsertItem(0, _T("仪表盘"));
+		m_tabCtrl.InsertItem(1, _T("账号管理"));
+		m_tabCtrl.InsertItem(2, _T("商品管理"));
+		m_tabCtrl.InsertItem(3, _T("订单管理"));
+		m_tabCtrl.InsertItem(4, _T("自动回复"));
+		m_tabCtrl.InsertItem(5, _T("指定商品回复"));
+		m_tabCtrl.InsertItem(6, _T("卡券管理"));
+		m_tabCtrl.InsertItem(7, _T("自动发货"));
+		m_tabCtrl.InsertItem(8, _T("通知渠道"));
+		m_tabCtrl.InsertItem(9, _T("消息通知"));
+		m_tabCtrl.InsertItem(10, _T("商品搜索"));
+		m_tabCtrl.InsertItem(11, _T("系统设置"));
+		m_tabCtrl.InsertItem(12, _T("系统日志"));
+		m_tabCtrl.InsertItem(13, _T("风控日志"));
+
+	}
+
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -107,23 +127,20 @@ void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 	}
 }
 
-void CGoofishDlg::OnBnClickedButtonConnect()
+void CGoofishDlg::OnSize(UINT nType, int cx, int cy)
 {
-	try {
-		auto wsSystem = GetSystem<WebsocketClientSystem>();
+	__super::OnSize(nType, cx, cy);
 
-		wsSystem->Connect("wss://wss-goofish.dingtalk.com/");
-	}
-	catch (const std::exception& /*e*/) {
-	}
-}
-
-void CGoofishDlg::OnBnClickedButtonSend()
-{
-	try {
-		auto wsSystem = GetSystem<WebsocketClientSystem>();
-		wsSystem->Send("Hello Goofish!");
-	}
-	catch (const std::exception& /*e*/) {
+	// 窗口大小改变时调整 Tab 大小（保留边距）
+	if (m_tabCtrl.GetSafeHwnd())
+	{
+		CRect rc;
+		GetClientRect(&rc);
+		rc.DeflateRect(8, 8);
+		m_tabCtrl.MoveWindow(&rc);
+		// 如果你有放在 Tab 内的子窗口（如子对话框），请使用：
+		// CRect rcPage = rc;
+		// m_tabCtrl.AdjustRect(FALSE, &rcPage); // 得到页内容区（不包含标签区域）
+		// pChild->MoveWindow(&rcPage);
 	}
 }
