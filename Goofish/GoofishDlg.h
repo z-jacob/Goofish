@@ -32,6 +32,7 @@ protected:
 protected:
 	HICON m_hIcon;
 	CTabCtrl m_tabCtrl;
+	CFont m_tabFont; // 新增：保持字体对象生命周期，避免临时对象被销毁
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();

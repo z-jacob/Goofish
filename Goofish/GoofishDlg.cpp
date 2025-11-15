@@ -89,6 +89,10 @@ BOOL CGoofishDlg::OnInitDialog()
 		m_tabCtrl.InsertItem(12, _T("系统日志"));
 		m_tabCtrl.InsertItem(13, _T("风控日志"));
 
+		if (!m_tabFont.GetSafeHandle()) {
+			m_tabFont.CreatePointFont(100, _T("Microsoft YaHei"));
+		}
+		m_tabCtrl.SetFont(&m_tabFont);
 	}
 
 
@@ -138,9 +142,5 @@ void CGoofishDlg::OnSize(UINT nType, int cx, int cy)
 		GetClientRect(&rc);
 		rc.DeflateRect(8, 8);
 		m_tabCtrl.MoveWindow(&rc);
-		// 如果你有放在 Tab 内的子窗口（如子对话框），请使用：
-		// CRect rcPage = rc;
-		// m_tabCtrl.AdjustRect(FALSE, &rcPage); // 得到页内容区（不包含标签区域）
-		// pChild->MoveWindow(&rcPage);
 	}
 }
