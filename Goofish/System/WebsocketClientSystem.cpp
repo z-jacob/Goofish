@@ -13,13 +13,15 @@ bool WebsocketClientSystem::Connect(const std::string& host, unsigned short port
 
 	try {
 		if (!client.connect(host, port_str, target, use_ssl, ca_file)) {
-			std::cerr << "[WebsocketClientSystem] Connect failed: Unable to connect to " << host << ":" << port << std::endl;
+			this->SendEvent<WebsocketErrorEvent>("[WebsocketClientSystem] Connect failed: Unable to connect to " + host + ":" + std::to_string(port));
 			return false;
 		}
 		client.start_read_loop();
 		return true;
-	} catch (const std::exception& ex) {
-		std::cerr << "[WebsocketClientSystem] Connect exception: " << ex.what() << std::endl;
+	}
+	catch (const std::exception& ex) {
+		std::string err = std::string("[WebsocketClientSystem] Connect exception: ") + ex.what();
+		this->SendEvent<WebsocketErrorEvent>(err);
 		return false;
 	}
 }
@@ -44,7 +46,7 @@ bool WebsocketClientSystem::Connect(const std::string& path)
 		std::regex re(R"(^(?:(ws|wss)://)?([^/:]+)(?::(\d+))?(/.*)?$)", std::regex::icase);
 		std::smatch m;
 		if (!std::regex_match(s, m, re)) {
-			std::cerr << "[WebsocketClientSystem] Connect(path) parse failed: invalid format: " << path << std::endl;
+			this->SendEvent<WebsocketErrorEvent>(std::string("[WebsocketClientSystem] Connect(path) parse failed: invalid format: ") + path);
 			return false;
 		}
 
@@ -59,17 +61,18 @@ bool WebsocketClientSystem::Connect(const std::string& path)
 			// portable case-insensitive compare
 			std::string scheme_l;
 			scheme_l.reserve(scheme.size());
-			std::transform(scheme.begin(), scheme.end(), std::back_inserter(scheme_l), [](unsigned char ch){ return std::tolower(ch); });
+			std::transform(scheme.begin(), scheme.end(), std::back_inserter(scheme_l), [](unsigned char ch) { return std::tolower(ch); });
 			use_ssl = (scheme_l == "wss");
 		}
 
 		if (port_str.empty()) {
 			// д╛хо╤к©з
 			port = use_ssl ? 443 : 80;
-		} else {
+		}
+		else {
 			long p = std::strtol(port_str.c_str(), nullptr, 10);
 			if (p <= 0 || p > 65535) {
-				std::cerr << "[WebsocketClientSystem] Connect(path) invalid port: " << port_str << std::endl;
+				this->SendEvent<WebsocketErrorEvent>(std::string("[WebsocketClientSystem] Connect(path) invalid port: ") + port_str);
 				return false;
 			}
 			port = static_cast<unsigned short>(p);
@@ -78,8 +81,9 @@ bool WebsocketClientSystem::Connect(const std::string& path)
 		if (target.empty()) target = "/";
 
 		return Connect(host, port, target, use_ssl);
-	} catch (const std::exception& ex) {
-		std::cerr << "[WebsocketClientSystem] Connect(path) exception: " << ex.what() << std::endl;
+	}
+	catch (const std::exception& ex) {
+		this->SendEvent<WebsocketErrorEvent>(std::string("[WebsocketClientSystem] Connect(path) exception: ") + ex.what());
 		return false;
 	}
 }
@@ -87,17 +91,18 @@ bool WebsocketClientSystem::Connect(const std::string& path)
 bool WebsocketClientSystem::Send(const std::string& msg)
 {
 	if (!client.is_connected()) {
-		std::cerr << "[WebsocketClientSystem] Send failed: not connected" << std::endl;
+		this->SendEvent<WebsocketErrorEvent>("[WebsocketClientSystem] Send failed: not connected");
 		return false;
 	}
 	try {
 		if (!client.send_text(msg)) {
-			std::cerr << "[WebsocketClientSystem] send_text failed" << std::endl;
+			this->SendEvent<WebsocketErrorEvent>("[WebsocketClientSystem] send_text failed");
 			return false;
 		}
 		return true;
-	} catch (const std::exception& ex) {
-		std::cerr << "[WebsocketClientSystem] Send exception: " << ex.what() << std::endl;
+	}
+	catch (const std::exception& ex) {
+		this->SendEvent<WebsocketErrorEvent>(std::string("[WebsocketClientSystem] Send exception: ") + ex.what());
 		return false;
 	}
 }
@@ -106,8 +111,9 @@ void WebsocketClientSystem::Close()
 {
 	try {
 		client.disconnect();
-	} catch (const std::exception& ex) {
-		std::cerr << "[WebsocketClientSystem] Close exception: " << ex.what() << std::endl;
+	}
+	catch (const std::exception& ex) {
+		this->SendEvent<WebsocketErrorEvent>(std::string("[WebsocketClientSystem] Close exception: ") + ex.what());
 	}
 }
 
@@ -116,7 +122,7 @@ void WebsocketClientSystem::OnInit()
 	try {
 		client.set_connection_callback([this]() {
 			this->SendEvent<WebsocketConnectionEvent>();
-		});
+			});
 
 		client.set_disconnection_callback([this]() {
 			this->SendEvent<WebsocketDisconnectionEvent>();
@@ -124,13 +130,14 @@ void WebsocketClientSystem::OnInit()
 
 		client.set_error_callback([this](const std::string& err) {
 			this->SendEvent<WebsocketErrorEvent>(err);
-		});
+			});
 
 		client.set_message_callback([this](const std::string& msg, bool is_binary) {
 			this->SendEvent<WebsocketReceiveEvent>(msg, is_binary);
-		});
-	} catch (const std::exception& ex) {
-		std::cerr << "[WebsocketClientSystem] OnInit exception: " << ex.what() << std::endl;
+			});
+	}
+	catch (const std::exception& ex) {
+		this->SendEvent<WebsocketErrorEvent>(std::string("[WebsocketClientSystem] OnInit exception: ") + ex.what());
 	}
 }
 

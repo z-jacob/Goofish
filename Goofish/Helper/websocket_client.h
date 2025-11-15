@@ -62,6 +62,9 @@ private:
     DisconnectionCallback disconnection_callback_;
     std::thread io_thread_;
     std::atomic<bool> should_stop_;
+
+    // 新增：标识 IO 线程是否实际在运行（防止 thread 对象已存在但线程已退出未 join 导致误判）
+    std::atomic<bool> io_thread_running_;
 };
 
 }
