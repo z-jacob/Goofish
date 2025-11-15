@@ -1,9 +1,4 @@
 #include "WebsocketClient.h"
-#include <boost/beast/core.hpp>
-#include <boost/beast/ssl.hpp>
-#include <boost/beast/websocket.hpp>
-#include <boost/asio/strand.hpp>
-#include <iostream>
 #include <thread>
 
 namespace beast = boost::beast;
@@ -261,24 +256,13 @@ namespace websocket_chat {
 
             connected_.store(false, std::memory_order_release);
 
-            // 清理底层对象，避免重连时被旧的 socket/stream 干扰
-            try {
-                if (ws_plain_) {
-                    beast::error_code ignore_ec;
-                    ws_plain_->next_layer().close(ignore_ec);
-                }
-            } catch (...) {}
-            try {
-                if (ws_ssl_) {
-                    beast::error_code ignore_ec;
-                    ws_ssl_->next_layer().next_layer().close(ignore_ec);
-                }
-            } catch (...) {}
-
+            // 清理底层对象和队列
             ws_plain_.reset();
             ws_ssl_.reset();
+            write_queue_.clear();
+            write_in_progress_ = false;
 
-            NotifyDisconnection();
+			NotifyDisconnection();
             return;
         }
 
@@ -354,6 +338,7 @@ namespace websocket_chat {
      * - 写错误会触发 notify_error() 并关闭连接。
      */
     void WebSocketClient::MaybeStartWrite() {
+        if (!connected_.load(std::memory_order_acquire)) return;
         if (write_in_progress_) return;
         if (write_queue_.empty()) return;
         write_in_progress_ = true;
@@ -465,13 +450,10 @@ namespace websocket_chat {
      * - 等待 io 线程退出后返回。
      */
     void WebSocketClient::Disconnect() {
-        // 标记停止并在 strand 中安全关闭
         should_stop_.store(true, std::memory_order_release);
 
-        // 如果之前没有启动过 io 线程，也需要清理资源
         net::post(strand_, [this]() {
             if (!connected_.load(std::memory_order_acquire)) {
-                // 即使未连接，也要释放 work guard 让 run() 退出
                 work_guard_.reset();
                 return;
             }
@@ -482,35 +464,25 @@ namespace websocket_chat {
                 if (use_ssl_.load(std::memory_order_acquire) && ws_ssl_) {
                     beast::error_code ec;
                     ws_ssl_->close(websocket::close_code::normal, ec);
-                    (void)ec;
                 }
                 else if (ws_plain_) {
                     beast::error_code ec;
                     ws_plain_->close(websocket::close_code::normal, ec);
-                    (void)ec;
                 }
-            }
-            catch (...) {}
+            } catch (...) {}
 
-            ws_plain_.reset();
-            ws_ssl_.reset();
-
-            // 清空写队列
-            write_queue_.clear();
-            write_in_progress_ = false;
-
-            // 释放 work guard，允许 run() 退出
+            // 不要立即 reset ws_plain_ / ws_ssl_，也不要清空 write_queue_
+            // work_guard_ 允许 run() 退出
             work_guard_.reset();
 
+            // 断开通知可以直接发出
             NotifyDisconnection();
         });
 
-        // 等待 io 线程退出
         if (io_thread_.joinable()) {
             io_thread_.join();
         }
 
-        // 最终确保状态
         connected_.store(false, std::memory_order_release);
     }
 

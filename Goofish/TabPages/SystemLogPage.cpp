@@ -1,6 +1,10 @@
 #include "SystemLogPage.h"
 #include "../Helper/Logger.h"
 
+BEGIN_MESSAGE_MAP(CSystemLogPage, CTabPageBase)
+	ON_MESSAGE(WM_ADD_LOG_LINE, &CSystemLogPage::OnAddLogLine)
+END_MESSAGE_MAP()
+
 void CSystemLogPage::CreateContent()
 {
 	CRect rc;
@@ -16,20 +20,20 @@ void CSystemLogPage::CreateContent()
 
 	Logger::SetCallback([this](const std::string& formatted)
 		{
-			// 根据换行符分割formatted，然后添加到列表中
 			size_t start = 0, end;
 			while ((end = formatted.find('\n', start)) != std::string::npos) {
 				std::string line = formatted.substr(start, end - start);
-				if (!line.empty()) {
-					m_listLog.AddString(CA2T(line.c_str()));
+				if (!line.empty() && m_listLog.GetSafeHwnd()) {
+					CString* pStr = new CString(CA2T(line.c_str()));
+					this->PostMessage(WM_ADD_LOG_LINE, 0, reinterpret_cast<LPARAM>(pStr));
 				}
 				start = end + 1;
 			}
-			// 处理最后一行（如果没有以\n结尾）
-			if (start < formatted.size()) {
+			if (start < formatted.size() && m_listLog.GetSafeHwnd()) {
 				std::string line = formatted.substr(start);
 				if (!line.empty()) {
-					m_listLog.AddString(CA2T(line.c_str()));
+					CString* pStr = new CString(CA2T(line.c_str()));
+					this->PostMessage(WM_ADD_LOG_LINE, 0, reinterpret_cast<LPARAM>(pStr));
 				}
 			}
 		});
@@ -46,7 +50,21 @@ void CSystemLogPage::Resize(const CRect& rc)
 
 	CRect rcList;
 	GetClientRect(&rcList);
+
 	rcList.DeflateRect(10, 10);
+
+
 	if (m_listLog.GetSafeHwnd())
 		m_listLog.MoveWindow(rcList);
+}
+
+LRESULT CSystemLogPage::OnAddLogLine(WPARAM wParam, LPARAM lParam)
+{
+	CString* pStr = reinterpret_cast<CString*>(lParam);
+	if (pStr && m_listLog.GetSafeHwnd())
+	{
+		m_listLog.AddString(*pStr);
+		delete pStr; // 释放内存
+	}
+	return 0;
 }

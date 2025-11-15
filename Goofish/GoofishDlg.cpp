@@ -73,9 +73,12 @@ BOOL CGoofishDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
+	// ---- 获取系统 ----
+	{
+		m_websocketClientSystem = this->GetSystem<WebsocketClientSystem>();
+	}
 
-
-	//// 按钮
+	// ---- 创建按钮 ----
 	{
 
 		// 按钮尺寸和位置
@@ -178,6 +181,7 @@ void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 	{
 		//m_listLog.AddString("Websocket Disconnect.");
 		LOG_WARNING("Websocket Disconnect.");
+		//m_state = ControllerState::Stopped;
 	}
 }
 
@@ -196,12 +200,16 @@ void CGoofishDlg::OnSize(UINT nType, int cx, int cy)
 
 void CGoofishDlg::OnBtnStop()
 {
+	m_websocketClientSystem->Close();
 	m_state = ControllerState::Stopped;
 }
 
 void CGoofishDlg::OnBtnStart()
 {
-	m_state = ControllerState::Running;
+	if (m_websocketClientSystem->Connect("wss://wss-goofish.dingtalk.com"))
+	{
+		m_state = ControllerState::Running;
+	}
 }
 
 void CGoofishDlg::OnBtnRestart()

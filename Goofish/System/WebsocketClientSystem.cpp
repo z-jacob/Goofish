@@ -144,6 +144,7 @@ bool WebsocketClientSystem::Send(const std::string& msg)
 void WebsocketClientSystem::Close()
 {
 	try {
+		// 在主线程安全调用 Disconnect
 		client.Disconnect();
 	}
 	catch (const std::exception& ex) {
@@ -161,12 +162,12 @@ void WebsocketClientSystem::OnInit()
 		client.SetConnectionCallback([this]() {
 			if (!initialized_.load(std::memory_order_acquire)) return;
 			this->SendEvent<WebsocketConnectionEvent>();
-		});
+			});
 
 		client.SetDisconnectionCallback([this]() {
 			if (!initialized_.load(std::memory_order_acquire)) return;
 			this->SendEvent<WebsocketDisconnectionEvent>();
-		});
+			});
 
 		client.SetErrorCallback([this](const std::string& err) {
 			// 错误可能发生在连接前/过程中，仍派发以便上层感知
@@ -176,12 +177,12 @@ void WebsocketClientSystem::OnInit()
 				return;
 			}
 			SendError(err);
-		});
+			});
 
 		client.SetMessageCallback([this](const std::string& msg, bool is_binary) {
 			if (!initialized_.load(std::memory_order_acquire)) return;
 			this->SendEvent<WebsocketReceiveEvent>(msg, is_binary);
-		});
+			});
 	}
 	catch (const std::exception& ex) {
 		SendError(std::string("[WebsocketClientSystem] OnInit exception: ") + ex.what());

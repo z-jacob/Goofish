@@ -5,8 +5,8 @@
 #include "Helper/JFramework.h"
 #include "TabPages/TabControlEx.h"
 #include <memory>
-#include <vector>
 
+#include "System/WebsocketClientSystem.h"
 
 enum class ControllerState
 {
@@ -45,6 +45,9 @@ protected:
 	CButton m_btnRestart;
 
 	JFramework::BindableProperty<ControllerState> m_state;
+
+
+    std::shared_ptr<WebsocketClientSystem> m_websocketClientSystem;
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();

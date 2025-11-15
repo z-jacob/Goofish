@@ -1,7 +1,6 @@
 #pragma once
 #include "TabPageBase.h"
-#include <afxwin.h>
-
+#define WM_ADD_LOG_LINE (WM_USER + 100)
 class CSystemLogPage : public CTabPageBase
 {
 public:
@@ -10,4 +9,6 @@ public:
 
 private:
     CListBox m_listLog;
+    afx_msg LRESULT OnAddLogLine(WPARAM wParam, LPARAM lParam);
+    DECLARE_MESSAGE_MAP()
 };

@@ -1,7 +1,8 @@
 #pragma once
 #include <afxwin.h>
+#include "../Helper/JFramework.h"
 
-class CTabPageBase : public CWnd
+class CTabPageBase : public CWnd,public JFramework::AbstractController
 {
 public:
 	CTabPageBase() = default;
@@ -42,6 +43,12 @@ public:
 			m_stLabel.MoveWindow(&rcClient);
 	}
 
+
+	std::weak_ptr<JFramework::IArchitecture> GetArchitecture() const override;
+
 protected:
 	CStatic m_stLabel;
+
+	void OnEvent(std::shared_ptr<JFramework::IEvent> event) override;
+
 };
