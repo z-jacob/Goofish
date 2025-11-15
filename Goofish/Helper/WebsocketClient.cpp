@@ -1,5 +1,7 @@
 #include "WebsocketClient.h"
-#include <thread>
+
+#include "Utils.h"
+
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -50,7 +52,7 @@ namespace websocket_chat {
 		bool verify_peer, const std::string& ca_file) {
 
 		if (connected_) {
-			NotifyError("Already connected");
+			NotifyError(MODULE_INFO + "Already connected");
 			return false;
 		}
 
@@ -97,7 +99,7 @@ namespace websocket_chat {
 					boost::system::error_code ec;
 					ssl_ctx_.load_verify_file(ca_file, ec);
 					if (ec) {
-						NotifyError(std::string("Failed to load CA file: ") + ca_file + " -> " + ec.message());
+						NotifyError(MODULE_INFO + std::string("Failed to load CA file: ") + ca_file + " -> " + ec.message());
 					}
 				}
 				else {
@@ -117,7 +119,7 @@ namespace websocket_chat {
 			if (use_ssl_) {
 				ws_ssl_ = std::make_unique<websocket::stream<beast::ssl_stream<tcp::socket>>>(ioc_, ssl_ctx_);
 				if (!SSL_set_tlsext_host_name(ws_ssl_->next_layer().native_handle(), host_only.c_str())) {
-					NotifyError("Failed to set SNI hostname");
+					NotifyError(MODULE_INFO + "Failed to set SNI hostname");
 					return false;
 				}
 				net::connect(ws_ssl_->next_layer().next_layer(), results);
@@ -145,7 +147,7 @@ namespace websocket_chat {
 			return true;
 		}
 		catch (const std::exception& e) {
-			NotifyError(std::string("Connection failed: ") + e.what());
+			NotifyError(MODULE_INFO + std::string("Connection failed: ") + e.what());
 			connected_ = false;
 			return false;
 		}
@@ -163,7 +165,7 @@ namespace websocket_chat {
 	 */
 	bool WebSocketClient::SendText(const std::string& message) {
 		if (!connected_) {
-			NotifyError("Not connected to server");
+			NotifyError(MODULE_INFO + "Not connected to server");
 			return false;
 		}
 		try {
@@ -178,7 +180,7 @@ namespace websocket_chat {
 			return true;
 		}
 		catch (const std::exception& e) {
-			NotifyError(std::string("SendText exception: ") + e.what());
+			NotifyError(MODULE_INFO + std::string("SendText exception: ") + e.what());
 			return false;
 		}
 	}
@@ -193,7 +195,7 @@ namespace websocket_chat {
 	 */
 	bool WebSocketClient::SendBinary(const std::vector<uint8_t>& data) {
 		if (!connected_) {
-			NotifyError("Not connected to server");
+			NotifyError(MODULE_INFO + "Not connected to server");
 			return false;
 		}
 		try {
@@ -208,7 +210,7 @@ namespace websocket_chat {
 			return true;
 		}
 		catch (const std::exception& e) {
-			NotifyError(std::string("SendBinary exception: ") + e.what());
+			NotifyError(MODULE_INFO + std::string("SendBinary exception: ") + e.what());
 			return false;
 		}
 	}
@@ -301,8 +303,26 @@ namespace websocket_chat {
 			NotifyMessage(out_message, is_binary);
 			return true;
 		}
+		catch (const beast::system_error& e) {
+			// 检查是否为 EOF（服务器断开）
+			if (e.code() == net::error::eof) {
+				NotifyError(MODULE_INFO +
+					"Server closed connection (EOF)");
+				ws_plain_.reset();
+				ws_ssl_.reset();
+				connected_ = false;
+				NotifyDisconnection();
+			}
+			else {
+				NotifyError(MODULE_INFO + std::string("Receive exception: ") + e.what());
+				connected_ = false;
+			}
+			return false;
+		}
 		catch (const std::exception& e) {
-			NotifyError(std::string("Receive exception: ") + e.what());
+			NotifyError(MODULE_INFO + std::string("Receive exception: ") + e.what());
+			ws_plain_.reset();
+			ws_ssl_.reset();
 			connected_ = false;
 			return false;
 		}

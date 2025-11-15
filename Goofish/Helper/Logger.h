@@ -2,7 +2,7 @@
 #include <string>
 #include <functional>
 
-
+#include "../Helper/Utils.h"
 
 #define LOG_INFO(message) Logger::Log(Logger::Level::Info,message )
 #define LOG_WARNING(message)  Logger::Log(Logger::Level::Warning, message)

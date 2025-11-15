@@ -25,6 +25,7 @@
 #include "TabPages/SystemSettingPage.h"
 #include "TabPages/SystemLogPage.h"
 #include "TabPages/RiskControlLogPage.h"
+#include "Helper/Utils.h"
 
 
 
@@ -149,6 +150,22 @@ BOOL CGoofishDlg::OnInitDialog()
 			UpdateButtonStates(state);
 		});
 
+
+	{
+	    // 启动线程，循环调用m_websocketClientSystem的Receive()方法
+        std::thread([this]()
+        {
+            while (true)
+            {
+                if (m_websocketClientSystem->IsConnected())
+                {
+                    m_websocketClientSystem->Receive();
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+        }).detach();
+	}
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -165,7 +182,7 @@ void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 {
 	if (auto e = std::dynamic_pointer_cast<WebsocketConnectionEvent>(event))
 	{
-		LOG_INFO("Websocket Connect.");
+		LOG_INFO(MODULE_INFO + "Websocket Connect.");
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketErrorEvent>(event))
 	{
@@ -174,13 +191,13 @@ void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketReceiveEvent>(event))
 	{
-		auto message = "Websocket Receive: " + e->m_message;
+		auto message = MODULE_INFO + "Websocket Receive: " + e->m_message;
 		LOG_INFO(message);
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketDisconnectionEvent>(event))
 	{
 		//m_listLog.AddString("Websocket Disconnect.");
-		LOG_WARNING("Websocket Disconnect.");
+		LOG_WARNING(MODULE_INFO + "Websocket Disconnect.");
 		m_state = ControllerState::Stopped;
 	}
 }
@@ -193,6 +210,7 @@ void CGoofishDlg::OnSize(UINT nType, int cx, int cy)
 	CRect rc;
 	GetClientRect(&rc);
 	rc.DeflateRect(8, 8);
+	rc.top += 40;
 
 	// 将大小调整委托给封装类
 	m_tabManager.OnParentSize(rc);

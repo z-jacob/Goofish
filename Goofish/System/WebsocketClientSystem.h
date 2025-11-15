@@ -69,6 +69,14 @@ public:
      */
 	void Receive();
 
+
+    /**
+     * @brief 获取当前连接状态
+     *
+     * @return true 已连接，false 未连接
+     */
+    bool IsConnected();
+
 protected:
     /**
      * @brief 系统初始化回调

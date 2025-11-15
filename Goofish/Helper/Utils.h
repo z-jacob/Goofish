@@ -1,0 +1,1 @@
+#define MODULE_INFO ("| "+ std::string(__FILE__) + ":" + std::string(__func__) + ":" + std::to_string(__LINE__) + " - ")

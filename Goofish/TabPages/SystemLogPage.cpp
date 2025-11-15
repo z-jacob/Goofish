@@ -2,6 +2,7 @@
 #include "../Helper/Logger.h"
 
 
+
 void CSystemLogPage::CreateContent()
 {
 	CRect rc;
@@ -34,8 +35,8 @@ void CSystemLogPage::CreateContent()
 		});
 
 
-	LOG_INFO("系统日志初始化完成");
-	LOG_INFO("正在监听系统事件...");
+	LOG_INFO(MODULE_INFO + "系统日志初始化完成");
+	LOG_INFO(MODULE_INFO + "正在监听系统事件...");
 
 }
 
