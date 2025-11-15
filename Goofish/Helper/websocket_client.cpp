@@ -307,7 +307,7 @@ namespace websocket_chat {
      * - 实际写操作由 write_queue_ 与 maybe_start_write() 管理；
      * - 入队操作通过 post 到 strand 执行，线程安全。
      */
-    bool WebSocketClient::send_text(const std::string& message) {
+    bool WebSocketClient::SendText(const std::string& message) {
         if (!connected_.load(std::memory_order_acquire)) {
             notify_error("Not connected to server");
             return false;

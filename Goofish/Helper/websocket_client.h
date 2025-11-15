@@ -64,7 +64,7 @@ public:
      *
      * 说明：实际写操作由内部写队列与 strand 序列化执行。
      */
-    bool send_text(const std::string& message);
+    bool SendText(const std::string& message);
 
     /**
      * @brief 发送二进制消息（异步）

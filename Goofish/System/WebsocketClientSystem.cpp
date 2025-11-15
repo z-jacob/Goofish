@@ -10,16 +10,11 @@
  * @file WebsocketClientSystem.cpp
  * @brief 将底层 websocket_chat::WebSocketClient 适配到系统框架（JFramework）
  *
- * 该实现负责：
- * - 提供按 host/port/target/use_ssl 的连接接口（向后兼容）；
- * - 提供按单一 path/url 的便捷连接接口（自动解析 scheme/host/port/target）；
- * - 提供发送与关闭操作的封装并通过事件系统上报连接/断开/错误/收到消息。
- *
- * 已优化点（面向对象设计原则）：
- * - 将 URL 解析职责抽离到本地函数（单一职责），简化成员方法逻辑；
- * - 统一错误事件发送逻辑，减少重复代码；
- * - 减少对底层实现内部行为的假设（移除对 start_read_loop 的冗余调用）；
- * - 保持异常安全并清晰地向上层报告错误。
+ * 本次优化关注点（面向对象原则）：
+ * - 引入依赖注入（CA 文件路径通过构造函数注入，便于测试与配置）；
+ * - 将重复的错误上报抽象为成员函数 send_error（封装，开闭）；
+ * - 增加 initialized_ 原子标记，回调在派发事件前检查，避免反初始化期间或之后派发事件；
+ * - 保持 URL 解析职责独立（匿名命名空间内函数），保持 Connect 系列方法简洁。
  */
 
 namespace {
@@ -31,7 +26,7 @@ namespace {
 	};
 
 	// 修剪字符串两端空白
-	inline std::string trim_copy(const std::string& s) {
+	inline std::string TrimCopy(const std::string& s) {
 		auto l = s.find_first_not_of(" \t\n\r");
 		if (l == std::string::npos) return {};
 		auto r = s.find_last_not_of(" \t\n\r");
@@ -39,8 +34,8 @@ namespace {
 	}
 
 	// 解析 websocket URL/path，成功返回 ParsedUrl，否则 return std::nullopt
-	std::optional<ParsedUrl> parse_ws_url(const std::string& path) {
-		std::string s = trim_copy(path);
+	std::optional<ParsedUrl> ParseWebsocketUrl(const std::string& path) {
+		std::string s = TrimCopy(path);
 		if (s.empty()) return std::nullopt;
 
 		// 正则提取：可选 scheme、主机、可选端口、可选路径
@@ -79,123 +74,125 @@ namespace {
 	}
 }
 
+WebsocketClientSystem::WebsocketClientSystem(const std::string& ca_file) noexcept
+	: ca_file_(ca_file)
+{
+}
+
+void WebsocketClientSystem::SendError(const std::string& msg)
+{
+	// 直接派发错误事件；某些错误也可能在系统未初始化前发生，
+	// 因此此处不检查 initialized_，由回调处进行保护（如果需要）。
+	this->SendEvent<WebsocketErrorEvent>(msg);
+}
+
 bool WebsocketClientSystem::Connect(const std::string& host, unsigned short port, const std::string& target, bool use_ssl)
 {
 	const std::string port_str = std::to_string(port);
-	const std::string ca_file = "cacert.pem";
-
-	// 统一错误事件发送简易 lambda
-	auto sendErr = [this](const std::string& msg) {
-		this->SendEvent<WebsocketErrorEvent>(msg);
-		};
 
 	try {
 		// 调用底层 client.connect（connect 会在内部启动 io 线程并在握手成功后触发回调）
-		if (!client.connect(host, port_str, target, use_ssl, ca_file)) {
-			sendErr("[WebsocketClientSystem] Connect failed: Unable to connect to " + host + ":" + std::to_string(port));
+		if (!client.connect(host, port_str, target, use_ssl, ca_file_)) {
+			SendError("[WebsocketClientSystem] Connect failed: Unable to connect to " + host + ":" + std::to_string(port));
 			return false;
 		}
-
-		// 之前代码显式调用 client.start_read_loop()，但底层在握手成功后会启动读循环。
-		// 这里移除冗余调用以避免对底层实现的假设。
 
 		return true;
 	}
 	catch (const std::exception& ex) {
-		sendErr(std::string("[WebsocketClientSystem] Connect exception: ") + ex.what());
+		SendError(std::string("[WebsocketClientSystem] Connect exception: ") + ex.what());
 		return false;
 	}
 }
 
 bool WebsocketClientSystem::Connect(const std::string& path)
 {
-	auto sendErr = [this](const std::string& msg) {
-		this->SendEvent<WebsocketErrorEvent>(msg);
-		};
-
 	try {
-		auto parsed = parse_ws_url(path);
+		auto parsed = ParseWebsocketUrl(path);
 		if (!parsed) {
-			sendErr(std::string("[WebsocketClientSystem] Connect(path) parse failed: invalid format: ") + path);
+			SendError(std::string("[WebsocketClientSystem] Connect(path) parse failed: invalid format: ") + path);
 			return false;
 		}
 
 		return Connect(parsed->host, parsed->port, parsed->target, parsed->use_ssl);
 	}
 	catch (const std::exception& ex) {
-		sendErr(std::string("[WebsocketClientSystem] Connect(path) exception: ") + ex.what());
+		SendError(std::string("[WebsocketClientSystem] Connect(path) exception: ") + ex.what());
 		return false;
 	}
 }
 
 bool WebsocketClientSystem::Send(const std::string& msg)
 {
-	auto sendErr = [this](const std::string& msg) {
-		this->SendEvent<WebsocketErrorEvent>(msg);
-		};
-
 	if (!client.is_connected()) {
-		sendErr("[WebsocketClientSystem] Send failed: not connected");
+		SendError("[WebsocketClientSystem] Send failed: not connected");
 		return false;
 	}
 	try {
-		if (!client.send_text(msg)) {
-			sendErr("[WebsocketClientSystem] send_text failed");
+		if (!client.SendText(msg)) {
+			SendError("[WebsocketClientSystem] send_text failed");
 			return false;
 		}
 		return true;
 	}
 	catch (const std::exception& ex) {
-		sendErr(std::string("[WebsocketClientSystem] Send exception: ") + ex.what());
+		SendError(std::string("[WebsocketClientSystem] Send exception: ") + ex.what());
 		return false;
 	}
 }
 
 void WebsocketClientSystem::Close()
 {
-	auto sendErr = [this](const std::string& msg) {
-		this->SendEvent<WebsocketErrorEvent>(msg);
-		};
-
 	try {
 		client.disconnect();
 	}
 	catch (const std::exception& ex) {
-		sendErr(std::string("[WebsocketClientSystem] Close exception: ") + ex.what());
+		SendError(std::string("[WebsocketClientSystem] Close exception: ") + ex.what());
 	}
 }
 
 void WebsocketClientSystem::OnInit()
 {
-	auto sendErr = [this](const std::string& msg) {
-		this->SendEvent<WebsocketErrorEvent>(msg);
-		};
-
 	try {
+		initialized_.store(true, std::memory_order_release);
+
 		// 将底层回调映射为框架事件
+		// 在回调中先检查 initialized_，避免在已反初始化或反初始化期间派发事件
 		client.set_connection_callback([this]() {
+			if (!initialized_.load(std::memory_order_acquire)) return;
 			this->SendEvent<WebsocketConnectionEvent>();
-			});
+		});
 
 		client.set_disconnection_callback([this]() {
+			if (!initialized_.load(std::memory_order_acquire)) return;
 			this->SendEvent<WebsocketDisconnectionEvent>();
-			});
+		});
 
 		client.set_error_callback([this](const std::string& err) {
+			// 错误可能发生在连接前/过程中，仍派发以便上层感知
+			if (!initialized_.load(std::memory_order_acquire)) {
+				// 若尚未初始化，仍派发错误以便诊断
+				this->SendEvent<WebsocketErrorEvent>(err);
+				return;
+			}
 			this->SendEvent<WebsocketErrorEvent>(err);
-			});
+		});
 
 		client.set_message_callback([this](const std::string& msg, bool is_binary) {
+			if (!initialized_.load(std::memory_order_acquire)) return;
 			this->SendEvent<WebsocketReceiveEvent>(msg, is_binary);
-			});
+		});
 	}
 	catch (const std::exception& ex) {
-		sendErr(std::string("[WebsocketClientSystem] OnInit exception: ") + ex.what());
+		SendError(std::string("[WebsocketClientSystem] OnInit exception: ") + ex.what());
 	}
 }
 
 void WebsocketClientSystem::OnDeinit()
 {
+	// 标记为未初始化，回调会检查此标记并停止派发事件
+	initialized_.store(false, std::memory_order_release);
+
 	Close();
 }
 

@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <atomic>
 
 /**
  * @brief 系统层的 WebSocket 客户端适配器
@@ -20,7 +21,8 @@
 class WebsocketClientSystem : public JFramework::AbstractSystem
 {
 public:
-    WebsocketClientSystem() = default;
+    // 可通过构造函数注入 CA 文件路径，便于测试和配置
+    explicit WebsocketClientSystem(const std::string& ca_file = "cacert.pem") noexcept;
     virtual ~WebsocketClientSystem() noexcept override = default;
 
     /**
@@ -95,6 +97,15 @@ protected:
     bool Connect(const std::string& host, unsigned short port, const std::string& target = "/", bool use_ssl = true);
 
 private:
+    // 统一错误发送（封装为成员，避免重复 lambda）
+    void SendError(const std::string& msg);
+
+    // CA 文件路径，可通过构造函数配置（便于测试/运行时替换）
+    std::string ca_file_;
+
+    // 标记系统是否处于已初始化状态（用于避免在已反初始化后继续派发事件）
+    std::atomic<bool> initialized_{ false };
+
     // 底层实际的 websocket 客户端实例
     websocket_chat::WebSocketClient client;
 };
