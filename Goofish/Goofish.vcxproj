@@ -31,7 +31,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
-    <UseOfMfc>Static</UseOfMfc>
+    <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -46,7 +46,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
-    <UseOfMfc>Static</UseOfMfc>
+    <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -187,6 +187,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="TabPages\TabControlEx.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Goofish.h" />
     <ClInclude Include="GoofishArchitecture.h" />
@@ -216,6 +217,7 @@
     <ClInclude Include="System\WebsocketClientSystem.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="TabPages\TabControlEx.cpp" />
     <ClCompile Include="Goofish.cpp" />
     <ClCompile Include="GoofishArchitecture.cpp" />
     <ClCompile Include="GoofishDlg.cpp" />
