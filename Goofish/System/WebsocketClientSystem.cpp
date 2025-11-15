@@ -172,10 +172,10 @@ void WebsocketClientSystem::OnInit()
 			// 错误可能发生在连接前/过程中，仍派发以便上层感知
 			if (!initialized_.load(std::memory_order_acquire)) {
 				// 若尚未初始化，仍派发错误以便诊断
-				this->SendEvent<WebsocketErrorEvent>(err);
+				SendError(err);
 				return;
 			}
-			this->SendEvent<WebsocketErrorEvent>(err);
+			SendError(err);
 		});
 
 		client.SetMessageCallback([this](const std::string& msg, bool is_binary) {

@@ -39,9 +39,6 @@
     <ClInclude Include="System\WebsocketClientSystem.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Helper\websocket_client.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Helper\WebsocketEvents.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -49,6 +46,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Helper\Logger.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper\WebsocketClient.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,10 +65,10 @@
     <ClCompile Include="System\WebsocketClientSystem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Helper\websocket_client.cpp">
+    <ClCompile Include="Helper\Logger.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Helper\Logger.cpp">
+    <ClCompile Include="Helper\WebsocketClient.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
