@@ -285,7 +285,8 @@ namespace websocket_chat {
 	bool WebSocketClient::Receive() {
 		if (!connected_) return false;
 		try {
-			std::string out_message, bool is_binary;
+			std::string out_message;
+			bool is_binary;
 
 			beast::flat_buffer buffer;
 			if (use_ssl_ && ws_ssl_) {

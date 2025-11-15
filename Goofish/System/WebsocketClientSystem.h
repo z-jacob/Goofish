@@ -59,6 +59,16 @@ public:
      */
     void Close();
 
+
+    /**
+     * @brief 接收来自服务器的消息
+     *
+     * 函数会从底层客户端接收消息，并触发 OnEvent 回调。
+     *
+     * @return true 获取到消息并成功处理，false 获取消息失败
+     */
+	void Receive();
+
 protected:
     /**
      * @brief 系统初始化回调

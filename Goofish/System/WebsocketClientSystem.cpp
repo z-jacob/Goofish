@@ -152,6 +152,17 @@ void WebsocketClientSystem::Close()
 	}
 }
 
+void WebsocketClientSystem::Receive()
+{
+	try {
+		// 在主线程安全调用 Disconnect
+		client.Receive();
+	}
+	catch (const std::exception& ex) {
+		SendError(std::string("[WebsocketClientSystem] Receive exception: ") + ex.what());
+	}
+}
+
 void WebsocketClientSystem::OnInit()
 {
 	try {
