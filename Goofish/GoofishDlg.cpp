@@ -56,6 +56,9 @@ void CGoofishDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CGoofishDlg, CDialog)
 	ON_WM_CLOSE()
 	ON_WM_SIZE()
+	ON_BN_CLICKED(1001, &CGoofishDlg::OnBtnStop)
+	ON_BN_CLICKED(1002, &CGoofishDlg::OnBtnStart)
+	ON_BN_CLICKED(1003, &CGoofishDlg::OnBtnRestart)
 END_MESSAGE_MAP()
 
 
@@ -66,11 +69,39 @@ BOOL CGoofishDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-
-	// 设置此对话框的图标。  当应用程序主窗口不是对话框时，框架将自动
-	//  执行此操作
+	// 设置窗口图标
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
+
+
+
+	//// 按钮
+	{
+
+		// 按钮尺寸和位置
+		const int btnWidth = 80;
+		const int btnHeight = 30;
+		const int btnTop = 10;
+		const int btnSpacing = 10;
+		const int btnLeftStart = 20;
+
+		// 创建 Stop 按钮
+		m_btnStop.Create(_T("Stop"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+			CRect(btnLeftStart, btnTop, btnLeftStart + btnWidth, btnTop + btnHeight),
+			this, 1001);
+
+		// 创建 Start 按钮
+		m_btnStart.Create(_T("Start"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+			CRect(btnLeftStart + btnWidth + btnSpacing, btnTop,
+				btnLeftStart + 2 * btnWidth + btnSpacing, btnTop + btnHeight),
+			this, 1002);
+
+		// 创建 Restart 按钮
+		m_btnRestart.Create(_T("Restart"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+			CRect(btnLeftStart + 2 * (btnWidth + btnSpacing), btnTop,
+				btnLeftStart + 3 * btnWidth + 2 * btnSpacing, btnTop + btnHeight),
+			this, 1003);
+	}
 
 	this->RegisterEvent<WebsocketConnectionEvent>(this);
 	this->RegisterEvent<WebsocketErrorEvent>(this);
@@ -84,6 +115,7 @@ BOOL CGoofishDlg::OnInitDialog()
 		CRect rc;
 		GetClientRect(&rc);
 		rc.DeflateRect(8, 8); // 边距
+		rc.top += 40;
 
 		// 创建封装的 tab 控件（内部创建 CTabCtrlEx）
 		m_tabManager.Create(this, IDC_TAB_CTRL, rc);
@@ -104,6 +136,15 @@ BOOL CGoofishDlg::OnInitDialog()
 		m_tabManager.AddPage(std::make_unique<CSystemLogPage>(), _T("系统日志"));
 		m_tabManager.AddPage(std::make_unique<CRiskControlLogPage>(), _T("风控日志"));
 	}
+
+
+
+	m_state = ControllerState::Stopped;
+
+	m_state.RegisterWithInitValue([this](ControllerState state)
+		{
+			UpdateButtonStates(state);
+		});
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -151,4 +192,35 @@ void CGoofishDlg::OnSize(UINT nType, int cx, int cy)
 
 	// 将大小调整委托给封装类
 	m_tabManager.OnParentSize(rc);
+}
+
+void CGoofishDlg::OnBtnStop()
+{
+	m_state = ControllerState::Stopped;
+}
+
+void CGoofishDlg::OnBtnStart()
+{
+	m_state = ControllerState::Running;
+}
+
+void CGoofishDlg::OnBtnRestart()
+{
+	m_state = ControllerState::Running;
+}
+
+void CGoofishDlg::UpdateButtonStates(ControllerState state)
+{
+	if (state == ControllerState::Stopped)
+	{
+		m_btnStop.EnableWindow(FALSE);
+		m_btnStart.EnableWindow(TRUE);
+		m_btnRestart.EnableWindow(TRUE);
+	}
+	else // Running
+	{
+		m_btnStop.EnableWindow(TRUE);
+		m_btnStart.EnableWindow(FALSE);
+		m_btnRestart.EnableWindow(FALSE);
+	}
 }
