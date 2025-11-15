@@ -15,6 +15,12 @@ using tcp = boost::asio::ip::tcp;
 
 namespace websocket_chat {
 
+    /**
+     * @brief 构造函数
+     *
+     * 初始化 SSL 上下文、io 工作守护、strand 以及原子状态变量。
+     * IO 线程尚未启动，实际运行在调用 connect 时触发。
+     */
     WebSocketClient::WebSocketClient()
         : ssl_ctx_(ssl::context::tlsv12_client)
         , work_guard_(net::make_work_guard(ioc_))
@@ -26,10 +32,30 @@ namespace websocket_chat {
         , io_thread_running_(false) {
     }
 
+    /**
+     * @brief 析构函数
+     *
+     * 确保断开并清理所有 IO 相关资源。析构时会调用 disconnect()。
+     */
     WebSocketClient::~WebSocketClient() {
         disconnect();
     }
 
+    /**
+     * @brief 同步发起连接并完成 WebSocket 握手（在 strand 中执行实际逻辑）
+     *
+     * @param host  主机（可以包含协议前缀和路径）
+     * @param port  端口字符串（如 "80" 或 "443"）
+     * @param target WebSocket 路径
+     * @param verify_peer 是否校验证书链（仅用于 TLS）
+     * @param ca_file 可选 CA bundle 路径（为空使用系统默认）
+     * @return true 表示已成功调度连接过程（握手可能仍在执行）；false 表示立即失败
+     *
+     * 线程/同步语义：
+     * - 该函数会确保内部 io_context 正常运行并在单独线程中调用 ioc_.run()。
+     * - 实际的解析、socket 连接与握手在 strand 上执行以与其他异步操作序列化。
+     * - 连接成功后会设置 connected_ 并触发 connection_callback_，随后调用 start_read_loop()。
+     */
     bool WebSocketClient::connect(const std::string& host, const std::string& port, const std::string& target,
         bool verify_peer, const std::string& ca_file) {
 
@@ -179,6 +205,12 @@ namespace websocket_chat {
         return true;
     }
 
+    /**
+     * @brief 启动或继续异步读取循环
+     *
+     * 如果尚未连接则直接返回。读取操作绑定在 strand 上以保证与写操作的序列化。
+     * 读取完成后会调用 handle_message()，handle_message 会决定是否继续读取。
+     */
     void WebSocketClient::start_read_loop() {
         if (!connected_.load(std::memory_order_acquire)) return;
 
@@ -197,15 +229,52 @@ namespace websocket_chat {
         }
     }
 
+    /**
+     * @brief 处理单次异步读取完成
+     *
+     * @param ec 读取操作结果错误码
+     * @param bytes_transferred 已读取字节数（用于 buffer_.consume）
+     *
+     * 行为：
+     * - 在常见的“正常断开”情形（close / EOF / reset / operation_aborted）下视为断开，不上报错误；
+     * - 在其它错误场景下调用 notify_error()；
+     * - 在成功读取时，将数据转换为字符串并通过 message_callback_ 回调（回调运行在 IO 线程）；
+     * - 消耗 buffer 中的已读数据并继续下一次读取。
+     */
     void WebSocketClient::handle_message(beast::error_code ec, std::size_t bytes_transferred) {
         if (ec) {
-            if (ec != websocket::error::closed) {
+            // 将常见的断开情况视为正常断开，不视为要上报的“错误”：
+            // - websocket 已正常关闭（close 帧）
+            // - 对端直接关闭连接 / EOF
+            // - 连接被重置
+            // - 操作被取消（例如主动 disconnect 导致的取消）
+            bool normal_disconnect =
+                (ec == websocket::error::closed) ||
+                (ec == net::error::eof) ||
+                (ec == net::error::connection_reset) ||
+                (ec == net::error::operation_aborted);
+
+            if (!normal_disconnect) {
+                // 仅对非正常断开上报错误
                 notify_error(std::string("Read error: ") + ec.message());
             }
 
             connected_.store(false, std::memory_order_release);
 
-            // 关闭并清理（在 strand 上执行）
+            // 清理底层对象，避免重连时被旧的 socket/stream 干扰
+            try {
+                if (ws_plain_) {
+                    beast::error_code ignore_ec;
+                    ws_plain_->next_layer().close(ignore_ec);
+                }
+            } catch (...) {}
+            try {
+                if (ws_ssl_) {
+                    beast::error_code ignore_ec;
+                    ws_ssl_->next_layer().next_layer().close(ignore_ec);
+                }
+            } catch (...) {}
+
             ws_plain_.reset();
             ws_ssl_.reset();
 
@@ -216,7 +285,7 @@ namespace websocket_chat {
         if (message_callback_) {
             std::string message = beast::buffers_to_string(buffer_.data());
             bool is_binary = use_ssl_.load(std::memory_order_acquire) ? (ws_ssl_ ? ws_ssl_->got_binary() : false)
-                                                                       : (ws_plain_ ? ws_plain_->got_binary() : false);
+                                                                   : (ws_plain_ ? ws_plain_->got_binary() : false);
             // 回调可以运行在 IO 线程（如果需要在外部线程运行，应用层可在回调内自己移交）
             message_callback_(message, is_binary);
         }
@@ -228,7 +297,16 @@ namespace websocket_chat {
         start_read_loop();
     }
 
-    // 向写队列入队并在必要时启动异步写（post 到 strand）
+    /**
+     * @brief 将文本消息异步入队等待发送
+     *
+     * @param message UTF-8 文本
+     * @return true 表示已成功入队；false 表示当前未连接
+     *
+     * 语义：
+     * - 实际写操作由 write_queue_ 与 maybe_start_write() 管理；
+     * - 入队操作通过 post 到 strand 执行，线程安全。
+     */
     bool WebSocketClient::send_text(const std::string& message) {
         if (!connected_.load(std::memory_order_acquire)) {
             notify_error("Not connected to server");
@@ -244,6 +322,14 @@ namespace websocket_chat {
         return true;
     }
 
+    /**
+     * @brief 将二进制消息异步入队等待发送
+     *
+     * @param data 二进制数据
+     * @return true 表示已成功入队；false 表示当前未连接
+     *
+     * 行为同 send_text，但设置为二进制。
+     */
     bool WebSocketClient::send_binary(const std::vector<uint8_t>& data) {
         if (!connected_.load(std::memory_order_acquire)) {
             notify_error("Not connected to server");
@@ -259,7 +345,14 @@ namespace websocket_chat {
         return true;
     }
 
-    // 必须在 strand 中调用
+    /**
+     * @brief 在 strand 中推进写操作：从队列弹出项并发起 async_write
+     *
+     * 注意：该函数假设正在在 strand 上运行（调用者通过 post/dispatch 保证）。
+     * - 使用 write_in_progress_ 防止并发写入；
+     * - 每次写完成后都会调用 maybe_start_write() 继续处理队列；
+     * - 写错误会触发 notify_error() 并关闭连接。
+     */
     void WebSocketClient::maybe_start_write() {
         if (write_in_progress_) return;
         if (write_queue_.empty()) return;
@@ -363,6 +456,14 @@ namespace websocket_chat {
         }
     }
 
+    /**
+     * @brief 主动断开连接并清理资源
+     *
+     * 语义：
+     * - 将断开逻辑 post 到 strand 中执行以保证线程安全；
+     * - 会关闭底层 websocket，清空写队列，重置 work_guard_ 以结束 io_context::run；
+     * - 等待 io 线程退出后返回。
+     */
     void WebSocketClient::disconnect() {
         // 标记停止并在 strand 中安全关闭
         should_stop_.store(true, std::memory_order_release);
@@ -413,6 +514,12 @@ namespace websocket_chat {
         connected_.store(false, std::memory_order_release);
     }
 
+    /**
+     * @brief 错误通知适配器
+     *
+     * 直接调用用户提供的 error_callback_（回调在 IO 线程执行）。
+     * 如果需要在 UI 线程处理，应由回调实现方负责线程切换。
+     */
     void WebSocketClient::notify_error(const std::string& error) {
         // 回调直接调用（通常在 IO 线程）。如果需要在 UI 线程调用，外部应在回调中切换。
         if (error_callback_) {
@@ -420,12 +527,22 @@ namespace websocket_chat {
         }
     }
 
+    /**
+     * @brief 连接成功通知适配器
+     *
+     * 直接调用 connection_callback_（回调在 IO 线程执行）。
+     */
     void WebSocketClient::notify_connection() {
         if (connection_callback_) {
             connection_callback_();
         }
     }
 
+    /**
+     * @brief 断开连接通知适配器
+     *
+     * 直接调用 disconnection_callback_（回调在 IO 线程执行）。
+     */
     void WebSocketClient::notify_disconnection()
     {
         if (disconnection_callback_) {
