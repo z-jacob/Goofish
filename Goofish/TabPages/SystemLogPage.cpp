@@ -1,9 +1,6 @@
 #include "SystemLogPage.h"
 #include "../Helper/Logger.h"
 
-BEGIN_MESSAGE_MAP(CSystemLogPage, CTabPageBase)
-	ON_MESSAGE(WM_ADD_LOG_LINE, &CSystemLogPage::OnAddLogLine)
-END_MESSAGE_MAP()
 
 void CSystemLogPage::CreateContent()
 {
@@ -24,16 +21,14 @@ void CSystemLogPage::CreateContent()
 			while ((end = formatted.find('\n', start)) != std::string::npos) {
 				std::string line = formatted.substr(start, end - start);
 				if (!line.empty() && m_listLog.GetSafeHwnd()) {
-					CString* pStr = new CString(CA2T(line.c_str()));
-					this->PostMessage(WM_ADD_LOG_LINE, 0, reinterpret_cast<LPARAM>(pStr));
+					m_listLog.AddString(CA2T(line.c_str()));
 				}
 				start = end + 1;
 			}
 			if (start < formatted.size() && m_listLog.GetSafeHwnd()) {
 				std::string line = formatted.substr(start);
 				if (!line.empty()) {
-					CString* pStr = new CString(CA2T(line.c_str()));
-					this->PostMessage(WM_ADD_LOG_LINE, 0, reinterpret_cast<LPARAM>(pStr));
+					m_listLog.AddString(CA2T(line.c_str()));
 				}
 			}
 		});
@@ -56,15 +51,4 @@ void CSystemLogPage::Resize(const CRect& rc)
 
 	if (m_listLog.GetSafeHwnd())
 		m_listLog.MoveWindow(rcList);
-}
-
-LRESULT CSystemLogPage::OnAddLogLine(WPARAM wParam, LPARAM lParam)
-{
-	CString* pStr = reinterpret_cast<CString*>(lParam);
-	if (pStr && m_listLog.GetSafeHwnd())
-	{
-		m_listLog.AddString(*pStr);
-		delete pStr; // ÊÍ·ÅÄÚ´æ
-	}
-	return 0;
 }

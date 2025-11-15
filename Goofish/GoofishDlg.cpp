@@ -181,7 +181,7 @@ void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 	{
 		//m_listLog.AddString("Websocket Disconnect.");
 		LOG_WARNING("Websocket Disconnect.");
-		//m_state = ControllerState::Stopped;
+		m_state = ControllerState::Stopped;
 	}
 }
 
