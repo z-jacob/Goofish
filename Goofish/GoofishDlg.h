@@ -4,7 +4,9 @@
 
 #pragma once
 #include "Helper/JFramework.h"
-
+#include <memory>
+#include <vector>
+#include "TabPages/TabPageBase.h"
 
 // CGoofishDlg 对话框
 class CGoofishDlg : public CDialog,public JFramework::AbstractController
@@ -33,6 +35,7 @@ protected:
 	HICON m_hIcon;
 	CTabCtrl m_tabCtrl;
 	CFont m_tabFont; // 新增：保持字体对象生命周期，避免临时对象被销毁
+	std::vector<std::unique_ptr<CTabPageBase>> m_pages;
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
@@ -40,4 +43,5 @@ protected:
 public:
 	afx_msg void OnClose();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnTcnSelchangeTab(NMHDR* pNMHDR, LRESULT* pResult);
 };

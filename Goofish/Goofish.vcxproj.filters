@@ -51,6 +51,51 @@
     <ClInclude Include="Helper\WebsocketClient.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="TabPages\AccountPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\AutoDeliverPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\AutoReplyPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\CouponPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\DashboardPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\MessageNotifyPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\NotifyChannelPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\OrderPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\ProductPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\ProductSearchPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\RiskControlLogPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\SpecificProductReplyPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\SystemLogPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\SystemSettingPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="TabPages\TabPageBase.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Goofish.cpp">
@@ -69,6 +114,51 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Helper\WebsocketClient.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\AccountPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\AutoDeliverPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\AutoReplyPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\CouponPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\DashboardPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\MessageNotifyPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\NotifyChannelPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\OrderPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\ProductPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\ProductSearchPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\RiskControlLogPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\SpecificProductReplyPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\SystemLogPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\SystemSettingPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TabPages\TabPageBase.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

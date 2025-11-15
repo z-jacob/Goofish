@@ -197,6 +197,21 @@
     <ClInclude Include="Helper\WebsocketClient.h" />
     <ClInclude Include="Helper\WebsocketEvents.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="TabPages\AccountPage.h" />
+    <ClInclude Include="TabPages\AutoDeliverPage.h" />
+    <ClInclude Include="TabPages\AutoReplyPage.h" />
+    <ClInclude Include="TabPages\CouponPage.h" />
+    <ClInclude Include="TabPages\DashboardPage.h" />
+    <ClInclude Include="TabPages\MessageNotifyPage.h" />
+    <ClInclude Include="TabPages\NotifyChannelPage.h" />
+    <ClInclude Include="TabPages\OrderPage.h" />
+    <ClInclude Include="TabPages\ProductPage.h" />
+    <ClInclude Include="TabPages\ProductSearchPage.h" />
+    <ClInclude Include="TabPages\RiskControlLogPage.h" />
+    <ClInclude Include="TabPages\SpecificProductReplyPage.h" />
+    <ClInclude Include="TabPages\SystemLogPage.h" />
+    <ClInclude Include="TabPages\SystemSettingPage.h" />
+    <ClInclude Include="TabPages\TabPageBase.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="System\WebsocketClientSystem.h" />
   </ItemGroup>
@@ -207,6 +222,21 @@
     <ClCompile Include="Helper\Logger.cpp" />
     <ClCompile Include="Helper\WebsocketClient.cpp" />
     <ClCompile Include="System\WebsocketClientSystem.cpp" />
+    <ClCompile Include="TabPages\AccountPage.cpp" />
+    <ClCompile Include="TabPages\AutoDeliverPage.cpp" />
+    <ClCompile Include="TabPages\AutoReplyPage.cpp" />
+    <ClCompile Include="TabPages\CouponPage.cpp" />
+    <ClCompile Include="TabPages\DashboardPage.cpp" />
+    <ClCompile Include="TabPages\MessageNotifyPage.cpp" />
+    <ClCompile Include="TabPages\NotifyChannelPage.cpp" />
+    <ClCompile Include="TabPages\OrderPage.cpp" />
+    <ClCompile Include="TabPages\ProductPage.cpp" />
+    <ClCompile Include="TabPages\ProductSearchPage.cpp" />
+    <ClCompile Include="TabPages\RiskControlLogPage.cpp" />
+    <ClCompile Include="TabPages\SpecificProductReplyPage.cpp" />
+    <ClCompile Include="TabPages\SystemLogPage.cpp" />
+    <ClCompile Include="TabPages\SystemSettingPage.cpp" />
+    <ClCompile Include="TabPages\TabPageBase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Goofish.rc" />
