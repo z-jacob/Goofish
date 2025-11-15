@@ -44,8 +44,9 @@ void CSystemLogPage::Resize(const CRect& rc)
 {
 	CTabPageBase::Resize(rc);
 
-	CRect rcList = rc;
-	rcList.DeflateRect(8, 8); // Àƒ÷‹¡Ù 8 œÒÀÿ±ﬂæ‡
+	CRect rcList;
+	GetClientRect(&rcList);
+	rcList.DeflateRect(10, 10);
 	if (m_listLog.GetSafeHwnd())
 		m_listLog.MoveWindow(rcList);
 }
