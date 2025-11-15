@@ -38,7 +38,7 @@ namespace websocket_chat {
      * 确保断开并清理所有 IO 相关资源。析构时会调用 disconnect()。
      */
     WebSocketClient::~WebSocketClient() {
-        disconnect();
+        Disconnect();
     }
 
     /**
@@ -56,11 +56,11 @@ namespace websocket_chat {
      * - 实际的解析、socket 连接与握手在 strand 上执行以与其他异步操作序列化。
      * - 连接成功后会设置 connected_ 并触发 connection_callback_，随后调用 start_read_loop()。
      */
-    bool WebSocketClient::connect(const std::string& host, const std::string& port, const std::string& target,
+    bool WebSocketClient::Connect(const std::string& host, const std::string& port, const std::string& target,
         bool verify_peer, const std::string& ca_file) {
 
         if (connected_.load(std::memory_order_acquire)) {
-            notify_error("Already connected");
+            NotifyError("Already connected");
             return false;
         }
 
@@ -132,7 +132,7 @@ namespace websocket_chat {
                         boost::system::error_code ec;
                         ssl_ctx_.load_verify_file(ca_file_copy, ec);
                         if (ec) {
-                            notify_error(std::string("Failed to load CA file: ") + ca_file_copy + " -> " + ec.message());
+                            NotifyError(std::string("Failed to load CA file: ") + ca_file_copy + " -> " + ec.message());
                         }
                     }
                     else {
@@ -162,7 +162,7 @@ namespace websocket_chat {
                     ws_ssl_ = std::make_unique<websocket::stream<beast::ssl_stream<tcp::socket>>>(ioc_, ssl_ctx_);
 
                     if (!SSL_set_tlsext_host_name(ws_ssl_->next_layer().native_handle(), host_only.c_str())) {
-                        notify_error("Failed to set SNI hostname");
+                        NotifyError("Failed to set SNI hostname");
                         return;
                     }
 
@@ -192,13 +192,13 @@ namespace websocket_chat {
                 }
 
                 connected_.store(true, std::memory_order_release);
-                notify_connection();
+                NotifyConnection();
 
                 // 启动异步读循环
-                start_read_loop();
+                StartReadLoop();
             }
             catch (const std::exception& e) {
-                notify_error(std::string("Connection failed: ") + e.what());
+                NotifyError(std::string("Connection failed: ") + e.what());
             }
         });
 
@@ -211,20 +211,20 @@ namespace websocket_chat {
      * 如果尚未连接则直接返回。读取操作绑定在 strand 上以保证与写操作的序列化。
      * 读取完成后会调用 handle_message()，handle_message 会决定是否继续读取。
      */
-    void WebSocketClient::start_read_loop() {
+    void WebSocketClient::StartReadLoop() {
         if (!connected_.load(std::memory_order_acquire)) return;
 
         // 继续在 strand 中执行读回调的排队，保证与写互不干扰
         if (use_ssl_.load(std::memory_order_acquire)) {
             ws_ssl_->async_read(buffer_,
                 net::bind_executor(strand_, [this](beast::error_code ec, std::size_t bytes) {
-                    handle_message(ec, bytes);
+                    HandleMessage(ec, bytes);
                 }));
         }
         else {
             ws_plain_->async_read(buffer_,
                 net::bind_executor(strand_, [this](beast::error_code ec, std::size_t bytes) {
-                    handle_message(ec, bytes);
+                    HandleMessage(ec, bytes);
                 }));
         }
     }
@@ -241,7 +241,7 @@ namespace websocket_chat {
      * - 在成功读取时，将数据转换为字符串并通过 message_callback_ 回调（回调运行在 IO 线程）；
      * - 消耗 buffer 中的已读数据并继续下一次读取。
      */
-    void WebSocketClient::handle_message(beast::error_code ec, std::size_t bytes_transferred) {
+    void WebSocketClient::HandleMessage(beast::error_code ec, std::size_t bytes_transferred) {
         if (ec) {
             // 将常见的断开情况视为正常断开，不视为要上报的“错误”：
             // - websocket 已正常关闭（close 帧）
@@ -256,7 +256,7 @@ namespace websocket_chat {
 
             if (!normal_disconnect) {
                 // 仅对非正常断开上报错误
-                notify_error(std::string("Read error: ") + ec.message());
+                NotifyError(std::string("Read error: ") + ec.message());
             }
 
             connected_.store(false, std::memory_order_release);
@@ -278,7 +278,7 @@ namespace websocket_chat {
             ws_plain_.reset();
             ws_ssl_.reset();
 
-            notify_disconnection();
+            NotifyDisconnection();
             return;
         }
 
@@ -294,7 +294,7 @@ namespace websocket_chat {
         buffer_.consume(bytes_transferred);
 
         // 继续读取
-        start_read_loop();
+        StartReadLoop();
     }
 
     /**
@@ -309,14 +309,14 @@ namespace websocket_chat {
      */
     bool WebSocketClient::SendText(const std::string& message) {
         if (!connected_.load(std::memory_order_acquire)) {
-            notify_error("Not connected to server");
+            NotifyError("Not connected to server");
             return false;
         }
 
         auto msg = std::make_shared<std::string>(message);
         net::post(strand_, [this, msg]() {
             write_queue_.push_back(Outgoing{ false, msg, nullptr });
-            maybe_start_write();
+            MaybeStartWrite();
         });
 
         return true;
@@ -330,16 +330,16 @@ namespace websocket_chat {
      *
      * 行为同 send_text，但设置为二进制。
      */
-    bool WebSocketClient::send_binary(const std::vector<uint8_t>& data) {
+    bool WebSocketClient::SendBinary(const std::vector<uint8_t>& data) {
         if (!connected_.load(std::memory_order_acquire)) {
-            notify_error("Not connected to server");
+            NotifyError("Not connected to server");
             return false;
         }
 
         auto buf = std::make_shared<std::vector<uint8_t>>(data);
         net::post(strand_, [this, buf]() {
             write_queue_.push_back(Outgoing{ true, nullptr, buf });
-            maybe_start_write();
+            MaybeStartWrite();
         });
 
         return true;
@@ -353,7 +353,7 @@ namespace websocket_chat {
      * - 每次写完成后都会调用 maybe_start_write() 继续处理队列；
      * - 写错误会触发 notify_error() 并关闭连接。
      */
-    void WebSocketClient::maybe_start_write() {
+    void WebSocketClient::MaybeStartWrite() {
         if (write_in_progress_) return;
         if (write_queue_.empty()) return;
         write_in_progress_ = true;
@@ -368,18 +368,18 @@ namespace websocket_chat {
                     ws_ssl_->async_write(net::buffer(*out.bin),
                         net::bind_executor(strand_, [this](beast::error_code ec, std::size_t /*bytes*/) {
                             if (ec) {
-                                notify_error(std::string("Write error: ") + ec.message());
+                                NotifyError(std::string("Write error: ") + ec.message());
                                 // 出错时关闭连接
                                 connected_.store(false, std::memory_order_release);
                                 ws_plain_.reset();
                                 ws_ssl_.reset();
-                                notify_disconnection();
+                                NotifyDisconnection();
                                 write_in_progress_ = false;
                                 return;
                             }
                             // 继续下一个写
                             write_in_progress_ = false;
-                            maybe_start_write();
+                            MaybeStartWrite();
                         }));
                 }
                 else if (ws_plain_) {
@@ -387,23 +387,23 @@ namespace websocket_chat {
                     ws_plain_->async_write(net::buffer(*out.bin),
                         net::bind_executor(strand_, [this](beast::error_code ec, std::size_t /*bytes*/) {
                             if (ec) {
-                                notify_error(std::string("Write error: ") + ec.message());
+                                NotifyError(std::string("Write error: ") + ec.message());
                                 connected_.store(false, std::memory_order_release);
                                 ws_plain_.reset();
                                 ws_ssl_.reset();
-                                notify_disconnection();
+                                NotifyDisconnection();
                                 write_in_progress_ = false;
                                 return;
                             }
                             write_in_progress_ = false;
-                            maybe_start_write();
+                            MaybeStartWrite();
                         }));
                 }
                 else {
                     // 没有可用 socket，丢弃并报告错误
-                    notify_error("Write failed: no websocket available");
+                    NotifyError("Write failed: no websocket available");
                     write_in_progress_ = false;
-                    maybe_start_write();
+                    MaybeStartWrite();
                 }
             }
             else {
@@ -412,16 +412,16 @@ namespace websocket_chat {
                     ws_ssl_->async_write(net::buffer(*out.text),
                         net::bind_executor(strand_, [this](beast::error_code ec, std::size_t /*bytes*/) {
                             if (ec) {
-                                notify_error(std::string("Write error: ") + ec.message());
+                                NotifyError(std::string("Write error: ") + ec.message());
                                 connected_.store(false, std::memory_order_release);
                                 ws_plain_.reset();
                                 ws_ssl_.reset();
-                                notify_disconnection();
+                                NotifyDisconnection();
                                 write_in_progress_ = false;
                                 return;
                             }
                             write_in_progress_ = false;
-                            maybe_start_write();
+                            MaybeStartWrite();
                         }));
                 }
                 else if (ws_plain_) {
@@ -429,30 +429,30 @@ namespace websocket_chat {
                     ws_plain_->async_write(net::buffer(*out.text),
                         net::bind_executor(strand_, [this](beast::error_code ec, std::size_t /*bytes*/) {
                             if (ec) {
-                                notify_error(std::string("Write error: ") + ec.message());
+                                NotifyError(std::string("Write error: ") + ec.message());
                                 connected_.store(false, std::memory_order_release);
                                 ws_plain_.reset();
                                 ws_ssl_.reset();
-                                notify_disconnection();
+                                NotifyDisconnection();
                                 write_in_progress_ = false;
                                 return;
                             }
                             write_in_progress_ = false;
-                            maybe_start_write();
+                            MaybeStartWrite();
                         }));
                 }
                 else {
-                    notify_error("Write failed: no websocket available");
+                    NotifyError("Write failed: no websocket available");
                     write_in_progress_ = false;
-                    maybe_start_write();
+                    MaybeStartWrite();
                 }
             }
         }
         catch (const std::exception& e) {
-            notify_error(std::string("Send exception: ") + e.what());
+            NotifyError(std::string("Send exception: ") + e.what());
             write_in_progress_ = false;
             // 继续尝试下一个
-            maybe_start_write();
+            MaybeStartWrite();
         }
     }
 
@@ -464,7 +464,7 @@ namespace websocket_chat {
      * - 会关闭底层 websocket，清空写队列，重置 work_guard_ 以结束 io_context::run；
      * - 等待 io 线程退出后返回。
      */
-    void WebSocketClient::disconnect() {
+    void WebSocketClient::Disconnect() {
         // 标记停止并在 strand 中安全关闭
         should_stop_.store(true, std::memory_order_release);
 
@@ -502,7 +502,7 @@ namespace websocket_chat {
             // 释放 work guard，允许 run() 退出
             work_guard_.reset();
 
-            notify_disconnection();
+            NotifyDisconnection();
         });
 
         // 等待 io 线程退出
@@ -520,7 +520,7 @@ namespace websocket_chat {
      * 直接调用用户提供的 error_callback_（回调在 IO 线程执行）。
      * 如果需要在 UI 线程处理，应由回调实现方负责线程切换。
      */
-    void WebSocketClient::notify_error(const std::string& error) {
+    void WebSocketClient::NotifyError(const std::string& error) {
         // 回调直接调用（通常在 IO 线程）。如果需要在 UI 线程调用，外部应在回调中切换。
         if (error_callback_) {
             error_callback_(error);
@@ -532,7 +532,7 @@ namespace websocket_chat {
      *
      * 直接调用 connection_callback_（回调在 IO 线程执行）。
      */
-    void WebSocketClient::notify_connection() {
+    void WebSocketClient::NotifyConnection() {
         if (connection_callback_) {
             connection_callback_();
         }
@@ -543,7 +543,7 @@ namespace websocket_chat {
      *
      * 直接调用 disconnection_callback_（回调在 IO 线程执行）。
      */
-    void WebSocketClient::notify_disconnection()
+    void WebSocketClient::NotifyDisconnection()
     {
         if (disconnection_callback_) {
             disconnection_callback_();

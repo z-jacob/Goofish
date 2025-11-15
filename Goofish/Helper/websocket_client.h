@@ -53,7 +53,7 @@ public:
      *
      * 说明：此函数会选择 plain 或 TLS 流，成功后会启动内部 IO 线程处理异步读写。
      */
-    bool connect(const std::string& host, const std::string& port, const std::string& target,
+    bool Connect(const std::string& host, const std::string& port, const std::string& target,
                  bool verify_peer = true, const std::string& ca_file = "");
     
     /**
@@ -72,21 +72,21 @@ public:
      * @param data 二进制数据缓冲
      * @return true 表示数据已成功入队等待发送；false 表示当前未连接或入队失败
      */
-    bool send_binary(const std::vector<uint8_t>& data);
+    bool SendBinary(const std::vector<uint8_t>& data);
 
     /**
      * @brief 主动断开连接（异步关闭）
      *
      * 该调用会触发关闭流程并在适当时通知断开回调。
      */
-    void disconnect();
+    void Disconnect();
 
     /**
      * @brief 查询当前连接状态
      *
      * @return true 如果已连接（handshake 成功并未断开）
      */
-    bool is_connected() const { return connected_.load(std::memory_order_acquire); }
+    bool IsConnected() const { return connected_.load(std::memory_order_acquire); }
     
     /**
      * @brief 设置接收到消息时的回调
@@ -95,31 +95,31 @@ public:
      * - payload: 接收到的消息数据（文本或二进制以字符串承载）
      * - is_binary: 是否为二进制消息
      */
-    void set_message_callback(MessageCallback callback) { message_callback_ = std::move(callback); }
+    void SetMessageCallback(MessageCallback callback) { message_callback_ = std::move(callback); }
 
     /**
      * @brief 设置错误回调（发生网络/协议错误时调用）
      *
      * 回调签名：void(const std::string& error_message)
      */
-    void set_error_callback(ErrorCallback callback) { error_callback_ = std::move(callback); }
+    void SetErrorCallback(ErrorCallback callback) { error_callback_ = std::move(callback); }
 
     /**
      * @brief 设置连接成功后的回调（握手完成时调用）
      */
-    void set_connection_callback(ConnectionCallback callback) { connection_callback_ = std::move(callback); }
+    void SetConnectionCallback(ConnectionCallback callback) { connection_callback_ = std::move(callback); }
 
     /**
      * @brief 设置断开连接回调（远端断开或主动关闭完成时调用）
      */
-    void set_disconnection_callback(DisconnectionCallback callback) { disconnection_callback_ = std::move(callback); }
+    void SetDisconnectionCallback(DisconnectionCallback callback) { disconnection_callback_ = std::move(callback); }
     
     /**
      * @brief 启动读取循环（通常内部在 connect 成功后自动调用）
      *
      * 公开此接口以支持在特定场景下手动启动读取任务。
      */
-    void start_read_loop();
+    void StartReadLoop();
 
 private:
     /**
@@ -130,24 +130,24 @@ private:
      *
      * 说明：此函数解析 buffer_ 并通过 message_callback_ 转发消息，必要时继续异步读取。
      */
-    void handle_message(boost::beast::error_code ec, std::size_t bytes_transferred);
+    void HandleMessage(boost::beast::error_code ec, std::size_t bytes_transferred);
 
     /**
      * @brief 内部错误通知（调用 error_callback_）
      *
      * @param error 错误描述文本
      */
-    void notify_error(const std::string& error);
+    void NotifyError(const std::string& error);
 
     /**
      * @brief 内部连接成功通知（调用 connection_callback_）
      */
-    void notify_connection();
+    void NotifyConnection();
 
     /**
      * @brief 内部断开通知（调用 disconnection_callback_）
      */
-    void notify_disconnection();
+    void NotifyDisconnection();
 
     /**
      * @brief 异步写队列项
@@ -169,14 +169,14 @@ private:
      *
      * 将从 write_queue_ 弹出下一项并触发异步写，直到队列为空或写在进行中。
      */
-    void maybe_start_write();
+    void MaybeStartWrite();
 
     /**
      * @brief 执行底层关闭流程（释放资源并设置状态）
      *
      * 该函数在内部使用，负责安全地关闭 websocket 并停止 io 相关线程。
      */
-    void do_close();
+    void DoClose();
 
     boost::asio::io_context ioc_;
     boost::asio::ssl::context ssl_ctx_;

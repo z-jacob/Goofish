@@ -92,7 +92,7 @@ bool WebsocketClientSystem::Connect(const std::string& host, unsigned short port
 
 	try {
 		// 调用底层 client.connect（connect 会在内部启动 io 线程并在握手成功后触发回调）
-		if (!client.connect(host, port_str, target, use_ssl, ca_file_)) {
+		if (!client.Connect(host, port_str, target, use_ssl, ca_file_)) {
 			SendError("[WebsocketClientSystem] Connect failed: Unable to connect to " + host + ":" + std::to_string(port));
 			return false;
 		}
@@ -124,7 +124,7 @@ bool WebsocketClientSystem::Connect(const std::string& path)
 
 bool WebsocketClientSystem::Send(const std::string& msg)
 {
-	if (!client.is_connected()) {
+	if (!client.IsConnected()) {
 		SendError("[WebsocketClientSystem] Send failed: not connected");
 		return false;
 	}
@@ -144,7 +144,7 @@ bool WebsocketClientSystem::Send(const std::string& msg)
 void WebsocketClientSystem::Close()
 {
 	try {
-		client.disconnect();
+		client.Disconnect();
 	}
 	catch (const std::exception& ex) {
 		SendError(std::string("[WebsocketClientSystem] Close exception: ") + ex.what());
@@ -158,17 +158,17 @@ void WebsocketClientSystem::OnInit()
 
 		// 将底层回调映射为框架事件
 		// 在回调中先检查 initialized_，避免在已反初始化或反初始化期间派发事件
-		client.set_connection_callback([this]() {
+		client.SetConnectionCallback([this]() {
 			if (!initialized_.load(std::memory_order_acquire)) return;
 			this->SendEvent<WebsocketConnectionEvent>();
 		});
 
-		client.set_disconnection_callback([this]() {
+		client.SetDisconnectionCallback([this]() {
 			if (!initialized_.load(std::memory_order_acquire)) return;
 			this->SendEvent<WebsocketDisconnectionEvent>();
 		});
 
-		client.set_error_callback([this](const std::string& err) {
+		client.SetErrorCallback([this](const std::string& err) {
 			// 错误可能发生在连接前/过程中，仍派发以便上层感知
 			if (!initialized_.load(std::memory_order_acquire)) {
 				// 若尚未初始化，仍派发错误以便诊断
@@ -178,7 +178,7 @@ void WebsocketClientSystem::OnInit()
 			this->SendEvent<WebsocketErrorEvent>(err);
 		});
 
-		client.set_message_callback([this](const std::string& msg, bool is_binary) {
+		client.SetMessageCallback([this](const std::string& msg, bool is_binary) {
 			if (!initialized_.load(std::memory_order_acquire)) return;
 			this->SendEvent<WebsocketReceiveEvent>(msg, is_binary);
 		});
