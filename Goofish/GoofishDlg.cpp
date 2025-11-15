@@ -73,7 +73,7 @@ BOOL CGoofishDlg::OnInitDialog()
 	// 注意：如果事件来自后台线程，请改为使用 PostMessage 将字符串发送到 UI 线程再调用 AddString
 	Logger::SetCallback([this](const std::string& formatted) {
 		m_listLog.AddString(formatted.c_str());
-	});
+		});
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -121,7 +121,7 @@ HCURSOR CGoofishDlg::OnQueryDragIcon()
 
 void CGoofishDlg::OnClose()
 {
-	
+
 	KillSelfProcess();
 
 	__super::OnClose();
@@ -132,23 +132,22 @@ void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 {
 	if (auto e = std::dynamic_pointer_cast<WebsocketConnectionEvent>(event))
 	{
-		Logger::Log(Logger::Level::Info, "Websocket Connect.");
+		LOG_INFO("Websocket Connect.");
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketErrorEvent>(event))
 	{
 		auto message = "Websocket Error: " + e->m_errorMessage;
-		Logger::Log(Logger::Level::Error, message);
+		LOG_ERROR(message);
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketReceiveEvent>(event))
 	{
-
 		auto message = "Websocket Receive: " + e->m_message;
-		Logger::Log(Logger::Level::Info, message);
+		LOG_INFO(message);
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketDisconnectionEvent>(event))
 	{
 		//m_listLog.AddString("Websocket Disconnect.");
-		Logger::Log(Logger::Level::Warning, "Websocket Disconnect.");
+		LOG_WARNING("Websocket Disconnect.");
 	}
 }
 
