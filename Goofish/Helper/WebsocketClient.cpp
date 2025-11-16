@@ -7,6 +7,7 @@ WebSocketClient* WebSocketClient::m_instance = nullptr;
 WebSocketClient::WebSocketClient()
 	: m_listener(nullptr), m_client(nullptr), m_connected(false), m_useSSL(false)
 {
+	m_instance = this;
 	m_listener = ::Create_HP_HttpClientListener();
 	::HP_Set_FN_HttpClient_OnConnect(m_listener, OnConnect);
 	::HP_Set_FN_HttpClient_OnHandShake(m_listener, OnHandShake);
