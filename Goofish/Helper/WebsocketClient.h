@@ -31,6 +31,8 @@ public:
     // 是否已连接
     bool IsConnected() const { return m_connected; }
 
+    void SetExtraData(const std::string& extraData) { m_extraData = extraData; }
+    std::string GetExtraData() const { return m_extraData; }
 
 	// 回调设置
 	void SetOnConnect(const std::function<void(CONNID)>& cb) { m_onConnect = cb; }
@@ -53,6 +55,7 @@ private:
     HP_HttpClient m_client;
     bool m_connected;
     bool m_useSSL;
+    std::string m_extraData;
 
 	// 回调成员
 	static WebSocketClient* m_instance;

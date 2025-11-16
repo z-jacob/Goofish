@@ -1,0 +1,17 @@
+#include "CookieModel.h"
+
+void CookieModel::OnInit()
+{
+
+}
+
+void CookieModel::OnDeinit()
+{
+
+}
+
+std::vector<std::string> CookieModel::GetCookies()
+{
+	return std::vector<std::string>{
+		"t=5e247d2ff89af2e56b4aeebfdb3ef501; cna=9/CGIWtgdRkCAQAAAAAO+iAb; tracknick=yllove1989; havana_lgc2_77=eyJoaWQiOjI3MDM5MjM0NTAsInNnIjoiZDY0OTFiNzUzZTliNjNjZmZiMjI0MzE1NmQ3ZmZkZDciLCJzaXRlIjo3NywidG9rZW4iOiIxNEZpQlFBcVJhNGpOU2tSZ0hjY0V6QSJ9; _hvn_lgc_=77; havana_lgc_exp=1764606397378; xlly_s=1; unb=2703923450; mtop_partitioned_detect=1; _m_h5_tk=70e764d4ab4ac41cddca4c534669146d_1763300129701; _m_h5_tk_enc=81a4a0341fa8d395bb850114f6317a50; cookie2=16cc3fa634e622bb23c6d765c8cd1d0d; _samesite_flag_=true; sgcookie=E100zXH6hd6aUijkEOSnAWsTmd44MJCPNhwLBJbnNzDqW6T8R%2BbEPF%2BrDh4LyqRCFeZJQ2wV5d4dEtK%2B1NM9OMiVeFDBQcH22OMRISvrTYpzI7w%3D; csg=1acf3a9a; _tb_token_=f833bee475a8e; sdkSilent=1763379144907; tfstk=gUgSanfA8TXS2foTVyRVfAahy8UIdI8NA6NKsXQP9zURp9hT3YyzzBYQpY2qz8lzyegQrqoP88JuRXHaRdJw7FloZk4pQdSpmqd3JWLUpnr8Zt_82dJw7E-RMy9WQbS5XclYt-F897epGEFaHMI-p8EAH5NgJJHKp-EY17Qd2yFLkoe09yeKpydbk-VQJJHLJIGxNR-49UPsNC0AlQZerJG8hwQKyeq7CcIFJw3bNugKw-iq0qN7VREdAFaxyxlKz4qDDiangcMIvvxNmzGK2zFZZU_bWbnqRSueTMw-EqGxro1N7AaSdl38c6QEwzwblS39TG2ql8kKPodN5kzx7lU-0nvzYzNsp4D5OwHtgfuum291HJmzsrFZZU_bWbFd437aCydOAsZGRSwwGIshx9atfplT2Nuu2SV51IOfEAE8iSwwGIshxuF0NFOXGTDO."};
+}

@@ -191,6 +191,8 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CookieSystem.h" />
+    <ClInclude Include="Model\CookieModel.h" />
     <ClInclude Include="Helper\Utils.h" />
     <ClInclude Include="HPSocket\HPSocket-SSL.h" />
     <ClInclude Include="HPSocket\HPSocket.h" />
@@ -228,6 +230,8 @@
     <ClInclude Include="Helper\WebSocketClient.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CookieSystem.cpp" />
+    <ClCompile Include="Model\CookieModel.cpp" />
     <ClCompile Include="TabPages\TabControlEx.cpp" />
     <ClCompile Include="Goofish.cpp" />
     <ClCompile Include="GoofishArchitecture.cpp" />
