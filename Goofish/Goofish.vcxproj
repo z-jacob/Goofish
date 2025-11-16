@@ -97,6 +97,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>HPSocket\Lib\HPSocket4C\x64\HPSocket4C_D.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -120,6 +121,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>HPSocket\Lib\HPSocket4C\x86\HPSocket4C.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -147,6 +149,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>HPSocket\Lib\HPSocket4C\x86\HPSocket4C_D.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -174,6 +177,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>HPSocket\Lib\HPSocket4C\x64\HPSocket4C.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -188,6 +192,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Helper\Utils.h" />
+    <ClInclude Include="HPSocket\HPSocket-SSL.h" />
+    <ClInclude Include="HPSocket\HPSocket.h" />
+    <ClInclude Include="HPSocket\HPSocket4C-SSL.h" />
+    <ClInclude Include="HPSocket\HPSocket4C.h" />
+    <ClInclude Include="HPSocket\HPTypeDef.h" />
+    <ClInclude Include="HPSocket\SocketInterface.h" />
     <ClInclude Include="TabPages\TabControlEx.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Goofish.h" />
@@ -196,7 +206,6 @@
     <ClInclude Include="Helper\JFramework.h" />
     <ClInclude Include="Helper\Logger.h" />
     <ClInclude Include="Helper\ProcessHelper.h" />
-    <ClInclude Include="Helper\WebsocketClient.h" />
     <ClInclude Include="Helper\WebsocketEvents.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="TabPages\AccountPage.h" />
@@ -216,6 +225,7 @@
     <ClInclude Include="TabPages\TabPageBase.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="System\WebsocketClientSystem.h" />
+    <ClInclude Include="Helper\WebSocketClient.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TabPages\TabControlEx.cpp" />
@@ -223,7 +233,6 @@
     <ClCompile Include="GoofishArchitecture.cpp" />
     <ClCompile Include="GoofishDlg.cpp" />
     <ClCompile Include="Helper\Logger.cpp" />
-    <ClCompile Include="Helper\WebsocketClient.cpp" />
     <ClCompile Include="System\WebsocketClientSystem.cpp" />
     <ClCompile Include="TabPages\AccountPage.cpp" />
     <ClCompile Include="TabPages\AutoDeliverPage.cpp" />
@@ -240,6 +249,7 @@
     <ClCompile Include="TabPages\SystemLogPage.cpp" />
     <ClCompile Include="TabPages\SystemSettingPage.cpp" />
     <ClCompile Include="TabPages\TabPageBase.cpp" />
+    <ClCompile Include="Helper\WebSocketClient.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Goofish.rc" />

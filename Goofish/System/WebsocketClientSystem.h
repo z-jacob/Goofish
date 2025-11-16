@@ -59,17 +59,6 @@ public:
      */
     void Close();
 
-
-    /**
-     * @brief 接收来自服务器的消息
-     *
-     * 函数会从底层客户端接收消息，并触发 OnEvent 回调。
-     *
-     * @return true 获取到消息并成功处理，false 获取消息失败
-     */
-	void Receive();
-
-
     /**
      * @brief 获取当前连接状态
      *
@@ -112,7 +101,7 @@ protected:
      * @param use_ssl 是否使用 TLS（wss），默认 true
      * @return true 表示已调度连接流程，false 表示立即失败
      */
-    bool Connect(const std::string& host, unsigned short port, const std::string& target = "/", bool use_ssl = true);
+    bool Connect(const std::string& host, unsigned short port, bool use_ssl = true);
 
 private:
     // CA 文件路径，可通过构造函数配置（便于测试/运行时替换）
@@ -122,6 +111,6 @@ private:
     std::atomic<bool> initialized_{ false };
 
     // 底层实际的 websocket 客户端实例
-    websocket_chat::WebSocketClient client;
+    WebSocketClient client;
 };
 

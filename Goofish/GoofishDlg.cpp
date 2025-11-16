@@ -150,22 +150,6 @@ BOOL CGoofishDlg::OnInitDialog()
 			UpdateButtonStates(state);
 		});
 
-
-	{
-	    // 启动线程，循环调用m_websocketClientSystem的Receive()方法
-        std::thread([this]()
-        {
-            while (true)
-            {
-                if (m_websocketClientSystem->IsConnected())
-                {
-                    m_websocketClientSystem->Receive();
-                }
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
-        }).detach();
-	}
-
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 

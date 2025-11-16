@@ -48,9 +48,6 @@
     <ClInclude Include="Helper\Logger.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Helper\WebsocketClient.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="TabPages\AccountPage.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -102,6 +99,27 @@
     <ClInclude Include="Helper\Utils.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="HPSocket\HPSocket.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HPSocket\HPSocket4C.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HPSocket\HPSocket4C-SSL.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HPSocket\HPSocket-SSL.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HPSocket\HPTypeDef.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HPSocket\SocketInterface.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper\WebSocketClient.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Goofish.cpp">
@@ -117,9 +135,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Helper\Logger.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Helper\WebsocketClient.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="TabPages\AccountPage.cpp">
@@ -168,6 +183,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="TabPages\TabControlEx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper\WebSocketClient.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

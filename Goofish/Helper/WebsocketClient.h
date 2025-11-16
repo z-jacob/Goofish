@@ -1,69 +1,65 @@
 #pragma once
-
-#include <boost/beast/core.hpp>
-#include <boost/beast/ssl.hpp>
-#include <boost/beast/websocket.hpp>
-#include <boost/beast/websocket/ssl.hpp>
-#include <boost/asio/connect.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ssl/stream.hpp>
-#include <functional>
-#include <memory>
+#include "../HPSocket/HPSocket4C-SSL.h"
+#include "../HPSocket/HPTypeDef.h"
 #include <string>
-#include <vector>
+#include <windows.h>
+#include <functional>
 
-namespace websocket_chat {
 
-class WebSocketClient {
+
+class WebSocketClient
+{
 public:
-    using MessageCallback = std::function<void(const std::string&, bool)>;
-    using ErrorCallback = std::function<void(const std::string&)>;
-    using ConnectionCallback = std::function<void()>;
-    using DisconnectionCallback = std::function<void()>;
-
     WebSocketClient();
     ~WebSocketClient();
 
-    // 同步连接
-    bool Connect(const std::string& host, const std::string& port, const std::string& target,
-                 bool verify_peer = true, const std::string& ca_file = "");
+    // 连接服务器（ws 或 wss）
+    bool Connect(const std::string& address, USHORT port, bool useSSL = false);
 
-    // 同步发送文本
-    bool SendText(const std::string& message);
-
-    // 同步发送二进制
-    bool SendBinary(const std::vector<uint8_t>& data);
-
-    // 同步断开
+    // 断开连接
     void Disconnect();
 
-    bool IsConnected() const { return connected_; }
+    // 发送文本消息
+    bool SendText(const std::string& text);
 
-    bool Receive();
+    // 发送二进制消息
+    bool SendBinary(const BYTE* data, int length);
 
-    // 回调接口（可选，连接/断开/错误时通知）
-    void SetMessageCallback(MessageCallback callback) { message_callback_ = std::move(callback); }
-    void SetErrorCallback(ErrorCallback callback) { error_callback_ = std::move(callback); }
-    void SetConnectionCallback(ConnectionCallback callback) { connection_callback_ = std::move(callback); }
-    void SetDisconnectionCallback(DisconnectionCallback callback) { disconnection_callback_ = std::move(callback); }
+    // 发送关闭帧
+    void SendClose();
+
+    // 是否已连接
+    bool IsConnected() const { return m_connected; }
+
+
+	// 回调设置
+	void SetOnConnect(const std::function<void(CONNID)>& cb) { m_onConnect = cb; }
+	void SetOnHandShake(const std::function<void(CONNID)>& cb) { m_onHandShake = cb; }
+	void SetOnWSMessageHeader(const std::function<void(CONNID, BOOL, BYTE, BYTE, const BYTE*, ULONGLONG)>& cb) { m_onWSMessageHeader = cb; }
+	void SetOnWSMessageBody(const std::function<void(CONNID, const BYTE*, int)>& cb) { m_onWSMessageBody = cb; }
+	void SetOnWSMessageComplete(const std::function<void(CONNID)>& cb) { m_onWSMessageComplete = cb; }
+	void SetOnClose(const std::function<void(CONNID, EnSocketOperation, int)>& cb) { m_onClose = cb; }
+
 
 private:
-    boost::asio::io_context ioc_;
-    boost::asio::ssl::context ssl_ctx_;
-    boost::beast::flat_buffer buffer_;
-    std::unique_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> ws_plain_;
-    std::unique_ptr<boost::beast::websocket::stream<boost::beast::ssl_stream<boost::asio::ip::tcp::socket>>> ws_ssl_;
-    bool use_ssl_;
-    bool connected_;
+    static EnHandleResult __stdcall OnConnect(HP_Client sender, CONNID connID);
+    static EnHandleResult __stdcall OnHandShake(HP_Client sender, CONNID connID);
+    static EnHandleResult __stdcall OnWSMessageHeader(HP_HttpClient sender, CONNID connID, BOOL bFinal, BYTE iReserved, BYTE iOperationCode, const BYTE lpszMask[4], ULONGLONG ullBodyLen);
+    static EnHandleResult __stdcall OnWSMessageBody(HP_HttpClient sender, CONNID connID, const BYTE* pData, int iLength);
+    static EnHandleResult __stdcall OnWSMessageComplete(HP_HttpClient sender, CONNID connID);
+    static EnHandleResult __stdcall OnClose(HP_Client sender, CONNID connID, EnSocketOperation enOperation, int iErrorCode);
 
-    MessageCallback message_callback_;
-    ErrorCallback error_callback_;
-    ConnectionCallback connection_callback_;
-    DisconnectionCallback disconnection_callback_;
+    HP_HttpClientListener m_listener;
+    HP_HttpClient m_client;
+    bool m_connected;
+    bool m_useSSL;
 
-    void NotifyConnection();
-    void NotifyDisconnection();
-    void NotifyMessage(const std::string& message, bool is_binary);
+	// 回调成员
+	static WebSocketClient* m_instance;
+	std::function<void(CONNID)> m_onConnect;
+	std::function<void(CONNID)> m_onHandShake;
+	std::function<void(CONNID, BOOL, BYTE, BYTE, const BYTE*, ULONGLONG)> m_onWSMessageHeader;
+	std::function<void(CONNID, const BYTE*, int)> m_onWSMessageBody;
+	std::function<void(CONNID)> m_onWSMessageComplete;
+	std::function<void(CONNID, EnSocketOperation, int)> m_onClose;
 };
-
-}
