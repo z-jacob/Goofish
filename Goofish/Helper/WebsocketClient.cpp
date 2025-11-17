@@ -94,7 +94,7 @@ EnHandleResult __stdcall WebSocketClient::OnConnect(HP_Client sender, CONNID con
 		extraData = extraData.length() > 0 ? ("[" + extraData + "]") : "";
 	}
 	LOG_INFO(MODULE_INFO + extraData + "connID:" + std::to_string(connID));
-	if (m_instance && m_instance->m_onConnect) m_instance->m_onConnect(connID);
+	if (m_instance && m_instance->m_onConnect) m_instance->m_onConnect(extraData, connID);
 	return HR_OK;
 }
 
@@ -106,7 +106,7 @@ EnHandleResult __stdcall WebSocketClient::OnHandShake(HP_Client sender, CONNID c
 		extraData = extraData.length() > 0 ? ("[" + extraData + "]") : "";
 	}
 	LOG_INFO(MODULE_INFO + extraData + "connID:" + std::to_string(connID));
-	if (m_instance && m_instance->m_onHandShake) m_instance->m_onHandShake(connID);
+	if (m_instance && m_instance->m_onHandShake) m_instance->m_onHandShake(extraData, connID);
 	return HR_OK;
 }
 
@@ -118,7 +118,7 @@ EnHandleResult __stdcall WebSocketClient::OnWSMessageHeader(HP_HttpClient sender
 		extraData = extraData.length() > 0 ? ("[" + extraData + "]") : "";
 	}
 	LOG_INFO(MODULE_INFO + extraData + "connID:" + std::to_string(connID) + "," + std::to_string(bFinal) + "," + std::to_string(iReserved) + "," + std::to_string(iOperationCode) + "," + std::to_string(ullBodyLen));
-	if (m_instance && m_instance->m_onWSMessageHeader) m_instance->m_onWSMessageHeader(connID, bFinal, iReserved, iOperationCode, lpszMask, ullBodyLen);
+	if (m_instance && m_instance->m_onWSMessageHeader) m_instance->m_onWSMessageHeader(extraData, connID, bFinal, iReserved, iOperationCode, lpszMask, ullBodyLen);
 	return HR_OK;
 }
 
@@ -131,7 +131,7 @@ EnHandleResult __stdcall WebSocketClient::OnWSMessageBody(HP_HttpClient sender, 
 	}
 	auto message = std::string(reinterpret_cast<const char*>(pData), iLength);
 	LOG_INFO(MODULE_INFO + extraData + "connID:" + std::to_string(connID) + "," + std::to_string(iLength) + "#" + message);
-	if (m_instance && m_instance->m_onWSMessageBody) m_instance->m_onWSMessageBody(connID, pData, iLength);
+	if (m_instance && m_instance->m_onWSMessageBody) m_instance->m_onWSMessageBody(extraData, connID, pData, iLength);
 	return HR_OK;
 }
 
@@ -143,7 +143,7 @@ EnHandleResult __stdcall WebSocketClient::OnWSMessageComplete(HP_HttpClient send
 		extraData = extraData.length() > 0 ? ("[" + extraData + "]") : "";
 	}
 	LOG_INFO(MODULE_INFO + extraData + "connID:" + std::to_string(connID));
-	if (m_instance && m_instance->m_onWSMessageComplete) m_instance->m_onWSMessageComplete(connID);
+	if (m_instance && m_instance->m_onWSMessageComplete) m_instance->m_onWSMessageComplete(extraData, connID);
 	return HR_OK;
 }
 
@@ -155,6 +155,6 @@ EnHandleResult __stdcall WebSocketClient::OnClose(HP_Client sender, CONNID connI
 		extraData = extraData.length() > 0 ? ("[" + extraData + "]") : "";
 	}
 	LOG_INFO(MODULE_INFO + extraData + "connID:" + std::to_string(connID) + "," + std::to_string(enOperation) + "," + std::to_string(iErrorCode));
-	if (m_instance && m_instance->m_onClose) m_instance->m_onClose(connID, enOperation, iErrorCode);
+	if (m_instance && m_instance->m_onClose) m_instance->m_onClose(extraData, connID, enOperation, iErrorCode);
 	return HR_OK;
 }

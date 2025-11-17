@@ -21,9 +21,6 @@
 class WebsocketClientSystem : public JFramework::AbstractSystem
 {
 public:
-    // 可通过构造函数注入 CA 文件路径，便于测试和配置
-    explicit WebsocketClientSystem(const std::string& ca_file = "cacert.pem") noexcept;
-    virtual ~WebsocketClientSystem() noexcept override = default;
 
     /**
      * @brief 解析并连接到指定 path/url

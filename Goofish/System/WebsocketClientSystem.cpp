@@ -76,11 +76,6 @@ namespace {
 	}
 }
 
-WebsocketClientSystem::WebsocketClientSystem(const std::string& ca_file) noexcept
-	: ca_file_(ca_file)
-{
-}
-
 bool WebsocketClientSystem::Connect(const std::string& host, unsigned short port, bool use_ssl)
 {
 	if (!client.Connect(host, port, use_ssl)) {
@@ -143,16 +138,16 @@ bool WebsocketClientSystem::IsConnected()
 
 void WebsocketClientSystem::OnInit()
 {
-	client.SetOnConnect([this](CONNID dwConnID) {
+	client.SetOnConnect([this](std::string extraData, CONNID dwConnID) {
 		this->SendEvent<WebsocketConnectionEvent>(dwConnID);
 		});
-	client.SetOnClose([this](CONNID dwConnID, EnSocketOperation enOperation, int iErrorCode) {
+	client.SetOnClose([this](std::string extraData, CONNID dwConnID, EnSocketOperation enOperation, int iErrorCode) {
 		this->SendEvent<WebsocketDisconnectionEvent>(dwConnID);
 		});
-	client.SetOnWSMessageComplete([this](CONNID dwConnID) {
+	client.SetOnWSMessageComplete([this](std::string extraData, CONNID dwConnID) {
 		this->SendEvent<WebsocketMessageCompleteEvent>(dwConnID);
 		});
-	client.SetOnWSMessageBody([this](CONNID dwConnID, const BYTE* pData, int iLength) {
+	client.SetOnWSMessageBody([this](std::string extraData, CONNID dwConnID, const BYTE* pData, int iLength) {
 		this->SendEvent<WebsocketMessageBodyEvent>(dwConnID, std::string(reinterpret_cast<const char*>(pData), iLength));
 		});
 }

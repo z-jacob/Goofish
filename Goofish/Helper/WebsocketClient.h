@@ -35,12 +35,12 @@ public:
     std::string GetExtraData() const { return m_extraData; }
 
 	// 回调设置
-	void SetOnConnect(const std::function<void(CONNID)>& cb) { m_onConnect = cb; }
-	void SetOnHandShake(const std::function<void(CONNID)>& cb) { m_onHandShake = cb; }
-	void SetOnWSMessageHeader(const std::function<void(CONNID, BOOL, BYTE, BYTE, const BYTE*, ULONGLONG)>& cb) { m_onWSMessageHeader = cb; }
-	void SetOnWSMessageBody(const std::function<void(CONNID, const BYTE*, int)>& cb) { m_onWSMessageBody = cb; }
-	void SetOnWSMessageComplete(const std::function<void(CONNID)>& cb) { m_onWSMessageComplete = cb; }
-	void SetOnClose(const std::function<void(CONNID, EnSocketOperation, int)>& cb) { m_onClose = cb; }
+	void SetOnConnect(const std::function<void(std::string,CONNID)>& cb) { m_onConnect = cb; }
+	void SetOnHandShake(const std::function<void(std::string, CONNID)>& cb) { m_onHandShake = cb; }
+	void SetOnWSMessageHeader(const std::function<void(std::string, CONNID, BOOL, BYTE, BYTE, const BYTE*, ULONGLONG)>& cb) { m_onWSMessageHeader = cb; }
+	void SetOnWSMessageBody(const std::function<void(std::string, CONNID, const BYTE*, int)>& cb) { m_onWSMessageBody = cb; }
+	void SetOnWSMessageComplete(const std::function<void(std::string, CONNID)>& cb) { m_onWSMessageComplete = cb; }
+	void SetOnClose(const std::function<void(std::string, CONNID, EnSocketOperation, int)>& cb) { m_onClose = cb; }
 
 
 private:
@@ -59,10 +59,10 @@ private:
 
 	// 回调成员
 	static WebSocketClient* m_instance;
-	std::function<void(CONNID)> m_onConnect;
-	std::function<void(CONNID)> m_onHandShake;
-	std::function<void(CONNID, BOOL, BYTE, BYTE, const BYTE*, ULONGLONG)> m_onWSMessageHeader;
-	std::function<void(CONNID, const BYTE*, int)> m_onWSMessageBody;
-	std::function<void(CONNID)> m_onWSMessageComplete;
-	std::function<void(CONNID, EnSocketOperation, int)> m_onClose;
+	std::function<void(std::string, CONNID)> m_onConnect;
+	std::function<void(std::string, CONNID)> m_onHandShake;
+	std::function<void(std::string, CONNID, BOOL, BYTE, BYTE, const BYTE*, ULONGLONG)> m_onWSMessageHeader;
+	std::function<void(std::string, CONNID, const BYTE*, int)> m_onWSMessageBody;
+	std::function<void(std::string, CONNID)> m_onWSMessageComplete;
+	std::function<void(std::string, CONNID, EnSocketOperation, int)> m_onClose;
 };
