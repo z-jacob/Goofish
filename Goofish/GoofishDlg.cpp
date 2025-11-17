@@ -60,6 +60,7 @@ BEGIN_MESSAGE_MAP(CGoofishDlg, CDialog)
 	ON_BN_CLICKED(1001, &CGoofishDlg::OnBtnStop)
 	ON_BN_CLICKED(1002, &CGoofishDlg::OnBtnStart)
 	ON_BN_CLICKED(1003, &CGoofishDlg::OnBtnRestart)
+	ON_BN_CLICKED(1004, &CGoofishDlg::OnBtnSend)
 END_MESSAGE_MAP()
 
 
@@ -105,6 +106,11 @@ BOOL CGoofishDlg::OnInitDialog()
 			CRect(btnLeftStart + 2 * (btnWidth + btnSpacing), btnTop,
 				btnLeftStart + 3 * btnWidth + 2 * btnSpacing, btnTop + btnHeight),
 			this, 1003);
+
+		m_btnSend.Create(_T("Send"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+			CRect(btnLeftStart + 3 * (btnWidth + btnSpacing), btnTop,
+				btnLeftStart + 4 * btnWidth + 2 * btnSpacing, btnTop + btnHeight),
+			this, 1004);
 	}
 
 	this->RegisterEvent<WebsocketConnectionEvent>(this);
@@ -201,7 +207,9 @@ void CGoofishDlg::OnBtnStop()
 
 void CGoofishDlg::OnBtnStart()
 {
-	if (m_websocketClientSystem->Connect("wss://wss-goofish.dingtalk.com"))
+	//wss://echo.websocket.org
+	//if (m_websocketClientSystem->Connect("wss://wss-goofish.dingtalk.com"))
+	if (m_websocketClientSystem->Connect("wss://echo.websocket.org"))
 	{
 		m_state = ControllerState::Running;
 	}
@@ -210,6 +218,11 @@ void CGoofishDlg::OnBtnStart()
 void CGoofishDlg::OnBtnRestart()
 {
 	m_state = ControllerState::Running;
+}
+
+void CGoofishDlg::OnBtnSend()
+{
+	m_websocketClientSystem->Send("hello world");
 }
 
 void CGoofishDlg::UpdateButtonStates(ControllerState state)

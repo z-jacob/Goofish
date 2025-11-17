@@ -43,6 +43,7 @@ protected:
 	CButton m_btnStop;
 	CButton m_btnStart;
 	CButton m_btnRestart;
+	CButton m_btnSend;
 
 	JFramework::BindableProperty<ControllerState> m_state;
 
@@ -60,6 +61,7 @@ public:
 	afx_msg void OnBtnStop();
 	afx_msg void OnBtnStart();
 	afx_msg void OnBtnRestart();
+	afx_msg void OnBtnSend();
 
 	void UpdateButtonStates(ControllerState state);
 };
