@@ -279,7 +279,6 @@ EnHttpParseResult WebSocketClient::OnChunkHeader(HP_HttpClient pSender, CONNID d
 EnHttpParseResult WebSocketClient::OnChunkComplete(HP_HttpClient pSender, CONNID dwConnID)
 {
 	LOG_INFO(MODULE_INFO, GetExtraData_s());
-
 	return HPR_OK;
 }
 
