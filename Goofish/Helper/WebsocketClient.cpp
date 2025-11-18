@@ -360,11 +360,8 @@ EnHttpParseResult WebSocketClient::OnHeader(HP_HttpClient pSender, CONNID dwConn
 
 EnHttpParseResult WebSocketClient::OnHeadersComplete(HP_HttpClient pSender, CONNID dwConnID)
 {
-
-
 	auto strSummary = "* * * * * * * * * Summary * * * * * * * * *\n";
 	auto strHeaderSummary = GetHeaderSummary(pSender, "    ", 0, TRUE);
-
 	LOG_INFO(MODULE_INFO, GetExtraData_s() + strSummary + strHeaderSummary);
 	return HPR_OK;
 }
@@ -395,13 +392,13 @@ EnHttpParseResult WebSocketClient::OnMessageComplete(HP_HttpClient pSender, CONN
 
 EnHttpParseResult WebSocketClient::OnUpgrade(HP_HttpClient pSender, CONNID dwConnID, EnHttpUpgradeType enUpgradeType)
 {
-	LOG_INFO(MODULE_INFO, GetExtraData_s() + "enUpgradeType:" + std::to_string(enUpgradeType));
+	LOG_INFO(MODULE_INFO, GetExtraData_s() + "(type: " + std::to_string(enUpgradeType) + ")");
 	return HPR_OK;
 }
 
 EnHttpParseResult WebSocketClient::OnParseError(HP_HttpClient pSender, CONNID dwConnID, int iErrorCode, LPCSTR lpszErrorDesc)
 {
-	LOG_INFO(MODULE_INFO, GetExtraData_s() + "iErrorCode:" + std::to_string(iErrorCode) + ",lpszErrorDesc:" + lpszErrorDesc);
+	LOG_INFO(MODULE_INFO, GetExtraData_s() + "(" + std::to_string(iErrorCode) + ") : " + lpszErrorDesc);
 	return HPR_OK;
 }
 
@@ -409,8 +406,13 @@ EnHttpParseResult WebSocketClient::OnParseError(HP_HttpClient pSender, CONNID dw
 
 EnHandleResult WebSocketClient::OnWSMessageHeader(HP_HttpClient pSender, CONNID dwConnID, BOOL bFinal, BYTE iReserved, BYTE iOperationCode, const BYTE lpszMask[4], ULONGLONG ullBodyLen)
 {
-	LOG_INFO(MODULE_INFO, GetExtraData_s() + "bFinal:" + std::to_string(bFinal) + ",iReserved:"
-		+ std::to_string(iReserved) + ",iOperationCode:" + std::to_string(iOperationCode) + ",:ullBodyLen" + std::to_string(ullBodyLen));
+	std::string content = "(fin: " + std::to_string(bFinal)
+		+ ", rsv: 0x" + std::to_string(iReserved)
+		+ ", oc: 0x" + std::to_string(iOperationCode)
+		+ ", mask: " + std::to_string(lpszMask ? 1 : 0)
+		+ ", len: " + std::to_string(ullBodyLen) + ")";
+
+	LOG_INFO(MODULE_INFO, GetExtraData_s() + content);
 
 	if (m_instance && m_instance->m_onWSMessageHeader)
 		m_instance->m_onWSMessageHeader(GetExtraData_s(), dwConnID, bFinal, iReserved, iOperationCode, lpszMask, ullBodyLen);
@@ -420,12 +422,9 @@ EnHandleResult WebSocketClient::OnWSMessageHeader(HP_HttpClient pSender, CONNID 
 
 EnHandleResult WebSocketClient::OnWSMessageBody(HP_HttpClient pSender, CONNID dwConnID, const BYTE* pData, int iLength)
 {
-	auto message = std::string(reinterpret_cast<const char*>(pData), iLength);
-	LOG_INFO(MODULE_INFO, GetExtraData_s() + "Data:" + message + ",iLength:" + std::to_string(iLength));
+	LOG_INFO(MODULE_INFO, GetExtraData_s() + "(" + std::to_string(iLength) + " bytes)");
 	if (m_instance && m_instance->m_onWSMessageBody)
 		m_instance->m_onWSMessageBody(GetExtraData_s(), dwConnID, pData, iLength);
-
-
 	return HR_OK;
 }
 

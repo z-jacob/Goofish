@@ -23,6 +23,7 @@ void CSystemLogPage::CreateContent()
 				std::string line = formatted.substr(start, end - start);
 				if (!line.empty() && m_listLog.GetSafeHwnd()) {
 					m_listLog.AddString(CA2T(line.c_str()));
+					m_listLog.SetTopIndex(m_listLog.GetCount() - 1);
 				}
 				start = end + 1;
 			}
@@ -30,6 +31,7 @@ void CSystemLogPage::CreateContent()
 				std::string line = formatted.substr(start);
 				if (!line.empty()) {
 					m_listLog.AddString(CA2T(line.c_str()));
+					m_listLog.SetTopIndex(m_listLog.GetCount() - 1);
 				}
 			}
 		});
