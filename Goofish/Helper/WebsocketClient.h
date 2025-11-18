@@ -43,17 +43,28 @@ public:
 	void SetOnClose(const std::function<void(std::string, CONNID, EnSocketOperation, int)>& cb) { m_onClose = cb; }
 
 private:
-    static En_HP_HandleResult __stdcall OnConnect(HP_HttpClient sender, CONNID connID);
-    static En_HP_HandleResult __stdcall OnClose(HP_HttpClient sender, CONNID connID, EnSocketOperation enOperation, int iErrorCode);
-    static En_HP_HandleResult __stdcall OnHandShake(HP_HttpClient sender, CONNID connID);
-    
-    static En_HP_HandleResult __stdcall OnWSMessageHeader(HP_HttpClient sender, CONNID connID, BOOL bFinal, BYTE iReserved, BYTE iOperationCode, const BYTE lpszMask[4], ULONGLONG ullBodyLen);
-    static En_HP_HandleResult __stdcall OnWSMessageBody(HP_HttpClient sender, CONNID connID, const BYTE* pData, int iLength);
-    static En_HP_HandleResult __stdcall OnWSMessageComplete(HP_HttpClient sender, CONNID connID);
-   
-    static En_HP_HttpParseResult __stdcall OnUpgrade(HP_HttpClient pSender, CONNID dwConnID, EnHttpUpgradeType enUpgradeType);
+    static En_HP_HandleResult __stdcall OnSend(HP_Client pSender, CONNID dwConnID, const BYTE* pData, int iLength);
+    static En_HP_HandleResult __stdcall OnReceive(HP_Client pSender, CONNID dwConnID, const BYTE* pData, int iLength);
+    static En_HP_HandleResult __stdcall OnClose(HP_Client pSender, CONNID dwConnID, EnSocketOperation enOperation, int iErrorCode);
+    static En_HP_HandleResult __stdcall OnConnect(HP_Client pSender, CONNID dwConnID);
+    static En_HP_HandleResult __stdcall OnHandShake(HP_Client pSender, CONNID dwConnID);
 
-    HP_HttpClientListener m_listener;
+    static En_HP_HttpParseResult __stdcall OnMessageBegin(HP_HttpClient pSender, CONNID dwConnID);
+    static En_HP_HttpParseResult __stdcall OnStatusLine(HP_HttpClient pSender, CONNID dwConnID, USHORT usStatusCode, LPCSTR lpszDesc);
+    static En_HP_HttpParseResult __stdcall OnHeader(HP_HttpClient pSender, CONNID dwConnID, LPCSTR lpszName, LPCSTR lpszValue);
+    static En_HP_HttpParseResult __stdcall OnHeadersComplete(HP_HttpClient pSender, CONNID dwConnID);
+    static En_HP_HttpParseResult __stdcall OnBody(HP_HttpClient pSender, CONNID dwConnID, const BYTE* pData, int iLength);
+    static En_HP_HttpParseResult __stdcall OnChunkHeader(HP_HttpClient pSender, CONNID dwConnID, int iLength);
+    static En_HP_HttpParseResult __stdcall OnChunkComplete(HP_HttpClient pSender, CONNID dwConnID);
+    static En_HP_HttpParseResult __stdcall OnMessageComplete(HP_HttpClient pSender, CONNID dwConnID);
+    static En_HP_HttpParseResult __stdcall OnUpgrade(HP_HttpClient pSender, CONNID dwConnID, EnHttpUpgradeType enUpgradeType);
+    static En_HP_HttpParseResult __stdcall OnParseError(HP_HttpClient pSender, CONNID dwConnID, int iErrorCode, LPCSTR lpszErrorDesc);
+
+    static En_HP_HandleResult __stdcall OnWSMessageHeader(HP_HttpClient pSender, HP_CONNID dwConnID, BOOL bFinal, BYTE iReserved, BYTE iOperationCode, const BYTE lpszMask[4], ULONGLONG ullBodyLen);
+    static En_HP_HandleResult __stdcall OnWSMessageBody(HP_HttpClient pSender, HP_CONNID dwConnID, const BYTE* pData, int iLength);
+    static En_HP_HandleResult __stdcall OnWSMessageComplete(HP_HttpClient pSender, HP_CONNID dwConnID);
+
+    HP_HttpClientListener m_HttpClientListener;
     HP_HttpClient m_HttpClient;
     bool m_connected;
     bool m_useSSL;
