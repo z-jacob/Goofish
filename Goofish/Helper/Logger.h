@@ -4,9 +4,16 @@
 
 #include "../Helper/Utils.h"
 
-#define LOG_INFO(message) Logger::Log(Logger::Level::Info,message )
-#define LOG_WARNING(message)  Logger::Log(Logger::Level::Warning, message)
-#define LOG_ERROR(message) Logger::Log(Logger::Level::Error, message)
+inline std::string ToString(const char* msg) {
+	return (msg && strlen(msg) > 0) ? std::string(msg) : std::string();
+}
+inline std::string ToString(const std::string& msg) {
+	return msg;
+}
+
+#define LOG_INFO(prefix, message) Logger::Log(Logger::Level::Info, (ToString(message).length() > 0 ? (prefix + " -> " + ToString(message)) : prefix))
+#define LOG_WARNING(prefix, message) Logger::Log(Logger::Level::Warning, (ToString(message).length() > 0 ? (prefix + " -> " + ToString(message)) : prefix))
+#define LOG_ERROR(prefix, message) Logger::Log(Logger::Level::Error, (ToString(message).length() > 0 ? (prefix + " -> " + ToString(message)) : prefix))
 
 class Logger
 {
