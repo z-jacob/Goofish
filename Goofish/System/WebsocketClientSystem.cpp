@@ -142,13 +142,17 @@ void WebsocketClientSystem::OnInit()
 		this->SendEvent<WebsocketConnectionEvent>(dwConnID);
 		});
 	client.SetOnClose([this](std::string extraData, CONNID dwConnID, EnSocketOperation enOperation, int iErrorCode) {
-		this->SendEvent<WebsocketDisconnectionEvent>(dwConnID);
+		this->SendEvent<WebsocketCloseEvent>(dwConnID);
 		});
 	client.SetOnWSMessageComplete([this](std::string extraData, CONNID dwConnID) {
 		this->SendEvent<WebsocketMessageCompleteEvent>(dwConnID);
 		});
 	client.SetOnWSMessageBody([this](std::string extraData, CONNID dwConnID, const BYTE* pData, int iLength) {
 		this->SendEvent<WebsocketMessageBodyEvent>(dwConnID, std::string(reinterpret_cast<const char*>(pData), iLength));
+		});
+	client.SetOnHandShake([this](std::string extraData, CONNID dwConnID) {
+		// 可选：处理握手完成事件
+		this->SendEvent<WebsocketHandShakeEvent>(dwConnID);
 		});
 }
 

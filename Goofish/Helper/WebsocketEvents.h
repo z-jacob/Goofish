@@ -37,11 +37,11 @@ public:
 	}
 };
 
-class WebsocketDisconnectionEvent : public JFramework::IEvent
+class WebsocketCloseEvent : public JFramework::IEvent
 {
 public:
 	CONNID m_dwConnID;
-	WebsocketDisconnectionEvent(CONNID dwConnID) : m_dwConnID(m_dwConnID) {
+	WebsocketCloseEvent(CONNID dwConnID) : m_dwConnID(m_dwConnID) {
 	}
 };
 

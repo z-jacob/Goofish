@@ -8,10 +8,9 @@
 
 #include "System/WebsocketClientSystem.h"
 
-enum class ControllerState
+enum EnAppState
 {
-	Stopped,
-	Running
+	ST_STARTING, ST_STARTED, ST_CONNECTING, ST_CONNECTED, ST_STOPPING, ST_STOPPED
 };
 
 
@@ -45,7 +44,7 @@ protected:
 	CButton m_btnRestart;
 	CButton m_btnSend;
 
-	JFramework::BindableProperty<ControllerState> m_state;
+	JFramework::BindableProperty<EnAppState> m_state;
 
 
     std::shared_ptr<WebsocketClientSystem> m_websocketClientSystem;
@@ -63,5 +62,5 @@ public:
 	afx_msg void OnBtnRestart();
 	afx_msg void OnBtnSend();
 
-	void UpdateButtonStates(ControllerState state);
+	void SetAppState(EnAppState state);
 };

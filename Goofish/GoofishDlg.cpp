@@ -116,7 +116,8 @@ BOOL CGoofishDlg::OnInitDialog()
 	this->RegisterEvent<WebsocketConnectionEvent>(this);
 	this->RegisterEvent<WebsocketErrorEvent>(this);
 	this->RegisterEvent<WebsocketReceiveEvent>(this);
-	this->RegisterEvent<WebsocketDisconnectionEvent>(this);
+	this->RegisterEvent<WebsocketCloseEvent>(this);
+	this->RegisterEvent<WebsocketHandShakeEvent>(this);
 
 
 
@@ -149,11 +150,11 @@ BOOL CGoofishDlg::OnInitDialog()
 
 
 
-	m_state = ControllerState::Stopped;
+	m_state = EnAppState::ST_STOPPED;
 
-	m_state.RegisterWithInitValue([this](ControllerState state)
+	m_state.RegisterWithInitValue([this](EnAppState state)
 		{
-			UpdateButtonStates(state);
+			SetAppState(state);
 		});
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
@@ -179,9 +180,13 @@ void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 	else if (auto e = std::dynamic_pointer_cast<WebsocketReceiveEvent>(event))
 	{
 	}
-	else if (auto e = std::dynamic_pointer_cast<WebsocketDisconnectionEvent>(event))
+	else if (auto e = std::dynamic_pointer_cast<WebsocketCloseEvent>(event))
 	{
-		m_state = ControllerState::Stopped;
+		m_state = EnAppState::ST_STOPPED;
+	}
+	else if (auto e = std::dynamic_pointer_cast<WebsocketHandShakeEvent>(event))
+	{
+		m_state = EnAppState::ST_STARTED;
 	}
 }
 
@@ -201,23 +206,29 @@ void CGoofishDlg::OnSize(UINT nType, int cx, int cy)
 
 void CGoofishDlg::OnBtnStop()
 {
+	m_state = EnAppState::ST_STOPPING;
 	m_websocketClientSystem->Close();
-	m_state = ControllerState::Stopped;
 }
 
 void CGoofishDlg::OnBtnStart()
 {
+	m_state = EnAppState::ST_STARTING;
+
 	//wss://echo.websocket.org
 	//if (m_websocketClientSystem->Connect("wss://wss-goofish.dingtalk.com"))
 	if (m_websocketClientSystem->Connect("wss://echo.websocket.org"))
 	{
-		m_state = ControllerState::Running;
+
+	}
+	else
+	{
+		m_state = EnAppState::ST_STOPPED;
 	}
 }
 
 void CGoofishDlg::OnBtnRestart()
 {
-	m_state = ControllerState::Running;
+
 }
 
 void CGoofishDlg::OnBtnSend()
@@ -225,18 +236,13 @@ void CGoofishDlg::OnBtnSend()
 	m_websocketClientSystem->Send("hello world");
 }
 
-void CGoofishDlg::UpdateButtonStates(ControllerState state)
+void CGoofishDlg::SetAppState(EnAppState state)
 {
-	if (state == ControllerState::Stopped)
-	{
-		m_btnStop.EnableWindow(FALSE);
-		m_btnStart.EnableWindow(TRUE);
-		m_btnRestart.EnableWindow(TRUE);
-	}
-	else // Running
-	{
-		m_btnStop.EnableWindow(TRUE);
-		m_btnStart.EnableWindow(FALSE);
-		m_btnRestart.EnableWindow(FALSE);
-	}
+	if (this->GetSafeHwnd() == nullptr)
+		return;
+
+	m_btnStop.EnableWindow(state == ST_STARTED);
+	m_btnStart.EnableWindow(state == ST_STOPPED);
+	m_btnRestart.EnableWindow(state == ST_STOPPED);
+	m_btnSend.EnableWindow(state == ST_STARTED);
 }
