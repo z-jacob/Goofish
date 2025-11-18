@@ -1,6 +1,6 @@
 #include "WebSocketClient.h"
 #include "Logger.h"
-
+#include <sstream>
 
 LPCSTR g_c_lpszPemCert =
 "-----BEGIN CERTIFICATE-----\n"
@@ -91,6 +91,105 @@ LPCTSTR g_c_lpszKeyPasswod = "123456";
 WebSocketClient* WebSocketClient::m_instance = nullptr;
 
 
+inline void AddRequestHeader(std::vector<THeader>& headers, const char* name, const char* value) {
+	THeader header;
+	header.name = name;
+	header.value = value;
+	headers.push_back(header);
+}
+
+inline std::string HttpVersionToString(EnHttpVersion enVersion, char* strResult)
+{
+	return "HTTP/" + std::to_string(LOBYTE(enVersion)) + "." + std::to_string(HIBYTE(enVersion));
+}
+
+BOOL WebSocketClient::SendUpgrade()
+{
+	std::vector<THeader> headers;
+	AddRequestHeader(headers, "Upgrade", "websocket");
+	AddRequestHeader(headers, "Connection", "Upgrade");
+	AddRequestHeader(headers, "Sec-WebSocket-Key", "x3JJHMbDL1EzLkh9GBhXDw==");
+	AddRequestHeader(headers, "Sec-WebSocket-Extensions", "permessage-deflate; client_max_window_bits");
+	AddRequestHeader(headers, "Sec-WebSocket-Version", "13");
+	return ::HP_HttpClient_SendRequest(m_HttpClient, "GET", "/", headers.data(), (int)headers.size(), nullptr, 0);
+}
+
+std::string WebSocketClient::GetHeaderSummary(HP_HttpClient pSender, LPCSTR lpszSep /*= " "*/, int iSepCount /*= 0*/, BOOL bWithContentLength /*= TRUE*/)
+{
+	// 使用ostringstream提升字符串拼接性能
+	std::ostringstream oss;
+	std::string SEP1(iSepCount, *lpszSep);
+	std::string SEP2 = SEP1 + lpszSep;
+	const char* CRLF = "\n";
+
+	// 状态字段
+	oss << SEP1 << "[Status Fields]" << CRLF;
+	oss << SEP2 << "Status Code: " << ::HP_HttpClient_GetStatusCode(pSender) << CRLF;
+
+	// 响应头
+	DWORD dwHeaderCount = 0;
+	::HP_HttpClient_GetAllHeaders(pSender, nullptr, &dwHeaderCount);
+
+	oss << SEP1 << "[Response Headers]" << CRLF;
+
+	if (dwHeaderCount == 0)
+	{
+		oss << SEP2 << "(no header)" << CRLF;
+	}
+	else
+	{
+		std::unique_ptr<THeader[]> headers(new THeader[dwHeaderCount]);
+		::HP_HttpClient_GetAllHeaders(pSender, headers.get(), &dwHeaderCount);
+
+		for (DWORD i = 0; i < dwHeaderCount; i++)
+			oss << SEP2 << headers[i].name << ": " << headers[i].value << CRLF;
+	}
+
+	// Cookies
+	DWORD dwCookieCount = 0;
+	::HP_HttpClient_GetAllCookies(pSender, nullptr, &dwCookieCount);
+
+	oss << SEP1 << "[Cookies]" << CRLF;
+
+	if (dwCookieCount == 0)
+	{
+		oss << SEP2 << "(no cookie)" << CRLF;
+	}
+	else
+	{
+		std::unique_ptr<TCookie[]> cookies(new TCookie[dwCookieCount]);
+		::HP_HttpClient_GetAllCookies(pSender, cookies.get(), &dwCookieCount);
+
+		for (DWORD i = 0; i < dwCookieCount; i++)
+			oss << SEP2 << cookies[i].name << ": " << cookies[i].value << CRLF;
+	}
+
+	// 基本信息
+	char versionStr[32] = { 0 };
+	::HttpVersionToString((EnHttpVersion)::HP_HttpClient_GetVersion(pSender), versionStr);
+	EnHttpUpgradeType enUpgType = ::HP_HttpClient_GetUpgradeType(pSender);
+	const char* lpszUpgrade = enUpgType != HUT_NONE ? "true" : "false";
+	const char* lpszKeepAlive = ::HP_HttpClient_IsKeepAlive(pSender) ? "true" : "false";
+
+	oss << SEP1 << "[Basic Info]" << CRLF;
+	oss << SEP2 << "Version: " << versionStr << CRLF;
+	oss << SEP2 << "Status Code: " << ::HP_HttpClient_GetStatusCode(pSender) << CRLF;
+	oss << SEP2 << "IsUpgrade: " << lpszUpgrade << CRLF;
+
+	if (enUpgType != HUT_NONE)
+		oss << SEP2 << "UpgradeType: " << enUpgType << CRLF;
+	oss << SEP2 << "IsKeepAlive: " << lpszKeepAlive << CRLF;
+
+	if (bWithContentLength)
+		oss << SEP2 << "ContentLength: " << ::HP_HttpClient_GetContentLength(pSender) << CRLF;
+
+	auto contentType = ::HP_HttpClient_GetContentType(pSender);
+	if (contentType != nullptr)
+		oss << SEP2 << "Content-Type: " << contentType << CRLF;
+
+	return oss.str();
+}
+
 WebSocketClient::WebSocketClient()
 	: m_HttpClientListener(nullptr), m_HttpClient(nullptr), m_connected(false), m_useSSL(false)
 {
@@ -144,8 +243,6 @@ bool WebSocketClient::Connect(const std::string& address, USHORT port, bool useS
 	{
 		m_HttpClient = ::Create_HP_HttpClient(m_HttpClientListener);
 	}
-
-	::HP_HttpClient_SetUseCookie(m_HttpClient, true);
 
 	// 启动连接
 #ifdef UNICODE
@@ -203,7 +300,8 @@ EnHandleResult WebSocketClient::OnConnect(HP_Client pSender, CONNID dwConnID)
 
 	std::string address(szAddress, iAddressLen);
 	LOG_INFO(MODULE_INFO, GetExtraData_s() + "local address:" + address + "#" + std::to_string(usPort));
-	if (m_instance && m_instance->m_onConnect) m_instance->m_onConnect(GetExtraData_s(), dwConnID);
+	if (m_instance && m_instance->m_onConnect)
+		m_instance->m_onConnect(GetExtraData_s(), dwConnID);
 
 	return HR_OK;
 }
@@ -211,7 +309,10 @@ EnHandleResult WebSocketClient::OnConnect(HP_Client pSender, CONNID dwConnID)
 EnHandleResult WebSocketClient::OnHandShake(HP_Client pSender, CONNID dwConnID)
 {
 	LOG_INFO(MODULE_INFO, GetExtraData_s());
-	if (m_instance && m_instance->m_onHandShake) m_instance->m_onHandShake(GetExtraData_s(), dwConnID);
+	if (m_instance && m_instance->m_onHandShake) {
+		m_instance->SendUpgrade();
+		m_instance->m_onHandShake(GetExtraData_s(), dwConnID);
+	}
 	return HR_OK;
 }
 
@@ -223,17 +324,16 @@ EnHandleResult WebSocketClient::OnSend(HP_Client pSender, CONNID dwConnID, const
 
 EnHandleResult WebSocketClient::OnReceive(HP_Client pSender, CONNID dwConnID, const BYTE* pData, int iLength)
 {
-	LOG_INFO(MODULE_INFO, GetExtraData_s());
+	LOG_INFO(MODULE_INFO, GetExtraData_s() + "(" + std::to_string(iLength) + " bytes)");
 	return HR_OK;
 }
 
 EnHandleResult WebSocketClient::OnClose(HP_Client pSender, CONNID dwConnID, EnSocketOperation enOperation, int iErrorCode)
 {
 	std::string content = "OP: " + std::to_string(enOperation) + ", CODE: " + std::to_string(iErrorCode);
-
 	LOG_INFO(MODULE_INFO, GetExtraData_s() + content);
-	if (m_instance && m_instance->m_onClose) m_instance->m_onClose(GetExtraData_s(), dwConnID, enOperation, iErrorCode);
-
+	if (m_instance && m_instance->m_onClose)
+		m_instance->m_onClose(GetExtraData_s(), dwConnID, enOperation, iErrorCode);
 	return HR_OK;
 }
 
@@ -260,7 +360,12 @@ EnHttpParseResult WebSocketClient::OnHeader(HP_HttpClient pSender, CONNID dwConn
 
 EnHttpParseResult WebSocketClient::OnHeadersComplete(HP_HttpClient pSender, CONNID dwConnID)
 {
-	LOG_INFO(MODULE_INFO, GetExtraData_s());
+
+
+	auto strSummary = "* * * * * * * * * Summary * * * * * * * * *\n";
+	auto strHeaderSummary = GetHeaderSummary(pSender, "    ", 0, TRUE);
+
+	LOG_INFO(MODULE_INFO, GetExtraData_s() + strSummary + strHeaderSummary);
 	return HPR_OK;
 }
 
@@ -317,7 +422,8 @@ EnHandleResult WebSocketClient::OnWSMessageBody(HP_HttpClient pSender, CONNID dw
 {
 	auto message = std::string(reinterpret_cast<const char*>(pData), iLength);
 	LOG_INFO(MODULE_INFO, GetExtraData_s() + "Data:" + message + ",iLength:" + std::to_string(iLength));
-	if (m_instance && m_instance->m_onWSMessageBody) m_instance->m_onWSMessageBody(GetExtraData_s(), dwConnID, pData, iLength);
+	if (m_instance && m_instance->m_onWSMessageBody)
+		m_instance->m_onWSMessageBody(GetExtraData_s(), dwConnID, pData, iLength);
 
 
 	return HR_OK;
@@ -326,7 +432,8 @@ EnHandleResult WebSocketClient::OnWSMessageBody(HP_HttpClient pSender, CONNID dw
 EnHandleResult WebSocketClient::OnWSMessageComplete(HP_HttpClient pSender, CONNID dwConnID)
 {
 	LOG_INFO(MODULE_INFO, GetExtraData_s());
-	if (m_instance && m_instance->m_onWSMessageComplete) m_instance->m_onWSMessageComplete(GetExtraData_s(), dwConnID);
+	if (m_instance && m_instance->m_onWSMessageComplete)
+		m_instance->m_onWSMessageComplete(GetExtraData_s(), dwConnID);
 
 	BYTE iOperationCode;
 

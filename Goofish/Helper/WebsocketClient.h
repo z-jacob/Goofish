@@ -79,4 +79,7 @@ private:
 	std::function<void(std::string, CONNID, const BYTE*, int)> m_onWSMessageBody;
 	std::function<void(std::string, CONNID)> m_onWSMessageComplete;
 	std::function<void(std::string, CONNID, EnSocketOperation, int)> m_onClose;
+
+    BOOL SendUpgrade();
+    static std::string GetHeaderSummary(HP_HttpClient pSender, LPCSTR lpszSep = "  ", int iSepCount = 0, BOOL bWithContentLength = TRUE);
 };

@@ -10,7 +10,7 @@ void CSystemLogPage::CreateContent()
 
 	// 初始创建，填满整个页面
 	m_listLog.Create(
-		WS_CHILD | WS_VISIBLE | WS_BORDER | LBS_NOTIFY,
+		WS_CHILD | WS_VISIBLE | WS_BORDER | LBS_NOTIFY | WS_VSCROLL,
 		rc,
 		this,
 		1001
