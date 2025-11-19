@@ -2,8 +2,9 @@
 #include <afxwin.h>
 #include "../Helper/JFramework.h"
 #include "../Model/FontModel.h"
+#include "../Model/UIModel.h"
 
-class CTabPageBase : public CWnd,public JFramework::AbstractController
+class CTabPageBase : public CWnd, public JFramework::AbstractController
 {
 public:
 	CTabPageBase() = default;
@@ -16,7 +17,9 @@ public:
 		if (!CWnd::Create(className, _T(""), WS_CHILD | WS_VISIBLE, rc, pParent, nID))
 			return FALSE;
 
+		m_uiModel = this->GetModel<UIModel>();
 		m_font = this->GetModel<FontModel>()->GetFont();
+
 		CreateContent();
 		return TRUE;
 	}
@@ -54,6 +57,7 @@ protected:
 
 	CFont* m_font;
 
+	std::shared_ptr<UIModel> m_uiModel;
 	void OnEvent(std::shared_ptr<JFramework::IEvent> event) override;
 
 };

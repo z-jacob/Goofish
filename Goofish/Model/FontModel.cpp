@@ -1,9 +1,12 @@
 #include "FontModel.h"
+#include "../Helper/Utils.h"
 
 void FontModel::OnInit()
 {
+	int fontHeight = 13 * Utils::GetDpi(); // 96 是标准 DPI
+
 	m_font.CreateFont(
-		13,                // 字体高度
+		fontHeight,                // 字体高度
 		0,                 // 字体宽度（0为自适应）
 		0,                 // 文字倾斜角度
 		0,                 // 基线倾斜角度

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "System/WebsocketClientSystem.h"
+#include "Model/UIModel.h"
 
 enum EnAppState
 {
@@ -48,6 +49,8 @@ protected:
 
 
     std::shared_ptr<WebsocketClientSystem> m_websocketClientSystem;
+
+    std::shared_ptr<UIModel> m_uiModel;
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();

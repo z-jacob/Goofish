@@ -51,7 +51,7 @@ void CSystemLogPage::Resize(const CRect& rc)
 	CRect rcList;
 	GetClientRect(&rcList);
 
-	rcList.DeflateRect(10, 10);
+	rcList.DeflateRect(m_uiModel->GetControlSafeDistance(), m_uiModel->GetControlSafeDistance());
 
 
 	if (m_listLog.GetSafeHwnd())

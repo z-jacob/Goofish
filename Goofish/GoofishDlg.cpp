@@ -78,6 +78,11 @@ BOOL CGoofishDlg::OnInitDialog()
 
 	auto font = this->GetModel<FontModel>()->GetFont();
 
+	// ---- 获取模型 ----
+	{
+		m_uiModel = this->GetModel<UIModel>();
+	}
+
 	// ---- 获取系统 ----
 	{
 		m_websocketClientSystem = this->GetSystem<WebsocketClientSystem>();
@@ -87,11 +92,11 @@ BOOL CGoofishDlg::OnInitDialog()
 	{
 
 		// 按钮尺寸和位置
-		const int btnWidth = 60;
-		const int btnHeight = 30;
-		const int btnTop = 10;
-		const int btnSpacing = 10;
-		const int btnLeftStart = 20;
+		const int btnWidth = m_uiModel->GetButtonWidth();
+		const int btnHeight = m_uiModel->GetButtonHeight();
+		const int btnTop = 10 * Utils::GetDpi();
+		const int btnSpacing = 10 * Utils::GetDpi();
+		const int btnLeftStart = 20 * Utils::GetDpi();
 
 		// 创建 Stop 按钮
 		m_btnStop.Create(_T("Stop"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
@@ -117,7 +122,7 @@ BOOL CGoofishDlg::OnInitDialog()
 
 
 		// 在 OnInitDialog 里创建字体并应用到按钮
-	
+
 
 		// 应用到按钮
 		m_btnStop.SetFont(font);
@@ -140,8 +145,8 @@ BOOL CGoofishDlg::OnInitDialog()
 	{
 		CRect rc;
 		GetClientRect(&rc);
-		rc.DeflateRect(8, 8); // 边距
-		rc.top += 40;
+		rc.DeflateRect(m_uiModel->GetControlSafeDistance(), m_uiModel->GetControlSafeDistance()); // 边距
+		rc.top += m_uiModel->GetTabControlTop();
 
 		// 创建封装的 tab 控件（内部创建 CTabCtrlEx）
 		m_tabManager.Create(this, IDC_TAB_CTRL, rc);
@@ -181,8 +186,8 @@ BOOL CGoofishDlg::OnInitDialog()
 		GetWindowRect(&rc);
 
 		// 设置新宽高
-		int newWidth = 1024;
-		int newHeight = 768;
+		int newWidth = m_uiModel->GetWindowWidth();
+		int newHeight = m_uiModel->GetWindowHeight();
 
 		// 移动窗口到原来的位置，并改变大小
 		SetWindowPos(nullptr, rc.left, rc.top, newWidth, newHeight, SWP_NOZORDER | SWP_NOACTIVATE);
@@ -229,8 +234,8 @@ void CGoofishDlg::OnSize(UINT nType, int cx, int cy)
 
 	CRect rc;
 	GetClientRect(&rc);
-	rc.DeflateRect(8, 8);
-	rc.top += 40;
+	rc.DeflateRect(m_uiModel->GetControlSafeDistance(), m_uiModel->GetControlSafeDistance());
+	rc.top += m_uiModel->GetTabControlTop();
 
 	// 将大小调整委托给封装类
 	m_tabManager.OnParentSize(rc);
