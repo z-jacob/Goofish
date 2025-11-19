@@ -39,8 +39,6 @@ protected:
 	CTabManager m_tabManager;   // 新：封装后的 Tab 管理器
 
 
-	CFont m_font;
-
 	CButton m_btnStop;
 	CButton m_btnStart;
 	CButton m_btnRestart;

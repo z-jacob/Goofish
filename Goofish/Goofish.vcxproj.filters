@@ -126,6 +126,9 @@
     <ClInclude Include="CookieSystem.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Model\FontModel.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Goofish.cpp">
@@ -198,6 +201,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CookieSystem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\FontModel.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

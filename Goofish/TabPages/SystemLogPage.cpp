@@ -16,7 +16,7 @@ void CSystemLogPage::CreateContent()
 		1001
 	);
 
-	m_listLog.SetFont(&m_font);
+	m_listLog.SetFont(m_font);
 
 	Logger::SetCallback([this](const std::string& formatted)
 		{
