@@ -115,7 +115,7 @@ BOOL CGoofishDlg::OnInitDialog()
 
 	this->RegisterEvent<WebsocketConnectionEvent>(this);
 	this->RegisterEvent<WebsocketErrorEvent>(this);
-	this->RegisterEvent<WebsocketReceiveEvent>(this);
+	this->RegisterEvent<WebsocketMessageBodyEvent>(this);
 	this->RegisterEvent<WebsocketCloseEvent>(this);
 	this->RegisterEvent<WebsocketHandShakeEvent>(this);
 
@@ -177,8 +177,9 @@ void CGoofishDlg::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 	else if (auto e = std::dynamic_pointer_cast<WebsocketErrorEvent>(event))
 	{
 	}
-	else if (auto e = std::dynamic_pointer_cast<WebsocketReceiveEvent>(event))
+	else if (auto e = std::dynamic_pointer_cast<WebsocketMessageBodyEvent>(event))
 	{
+		auto message = e->m_message;
 	}
 	else if (auto e = std::dynamic_pointer_cast<WebsocketCloseEvent>(event))
 	{
