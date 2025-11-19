@@ -84,7 +84,7 @@ BOOL CGoofishDlg::OnInitDialog()
 	{
 
 		// 按钮尺寸和位置
-		const int btnWidth = 80;
+		const int btnWidth = 60;
 		const int btnHeight = 30;
 		const int btnTop = 10;
 		const int btnSpacing = 10;
@@ -111,14 +111,41 @@ BOOL CGoofishDlg::OnInitDialog()
 			CRect(btnLeftStart + 3 * (btnWidth + btnSpacing), btnTop,
 				btnLeftStart + 4 * btnWidth + 2 * btnSpacing, btnTop + btnHeight),
 			this, 1004);
+
+
+		// 在 OnInitDialog 里创建字体并应用到按钮
+		m_font.CreateFont(
+			13,                // 字体高度
+			0,                 // 字体宽度（0为自适应）
+			0,                 // 文字倾斜角度
+			0,                 // 基线倾斜角度
+			FW_NORMAL,           // 字体粗细
+			FALSE,             // 是否斜体
+			FALSE,             // 是否下划线
+			0,                 // 字体字符集
+			ANSI_CHARSET,      // 字符集
+			OUT_DEFAULT_PRECIS,// 输出精度
+			CLIP_DEFAULT_PRECIS,// 裁剪精度
+			DEFAULT_QUALITY,   // 输出质量
+			DEFAULT_PITCH | FF_SWISS, // 字体类型
+			_T("宋体")      // 字体名称
+		);
+
+		// 应用到按钮
+		m_btnStop.SetFont(&m_font);
+		m_btnStart.SetFont(&m_font);
+		m_btnRestart.SetFont(&m_font);
+		m_btnSend.SetFont(&m_font);
 	}
 
-	this->RegisterEvent<WebsocketConnectionEvent>(this);
-	this->RegisterEvent<WebsocketErrorEvent>(this);
-	this->RegisterEvent<WebsocketMessageBodyEvent>(this);
-	this->RegisterEvent<WebsocketCloseEvent>(this);
-	this->RegisterEvent<WebsocketHandShakeEvent>(this);
-
+	// ---- 注册事件 ----
+	{
+		this->RegisterEvent<WebsocketConnectionEvent>(this);
+		this->RegisterEvent<WebsocketErrorEvent>(this);
+		this->RegisterEvent<WebsocketMessageBodyEvent>(this);
+		this->RegisterEvent<WebsocketCloseEvent>(this);
+		this->RegisterEvent<WebsocketHandShakeEvent>(this);
+	}
 
 
 	// ---- 使用封装的 Tab 管理器 ----
@@ -130,6 +157,7 @@ BOOL CGoofishDlg::OnInitDialog()
 
 		// 创建封装的 tab 控件（内部创建 CTabCtrlEx）
 		m_tabManager.Create(this, IDC_TAB_CTRL, rc);
+		m_tabManager.SetFont(&m_font);
 
 		// 添加页面（使用你已有的页面类）
 		m_tabManager.AddPage(std::make_unique<CDashboardPage>(), _T("仪表盘"));
@@ -148,14 +176,29 @@ BOOL CGoofishDlg::OnInitDialog()
 		m_tabManager.AddPage(std::make_unique<CRiskControlLogPage>(), _T("风控日志"));
 	}
 
+	// ---- 初始化状态绑定 ----
+	{
 
+		m_state = EnAppState::ST_STOPPED;
 
-	m_state = EnAppState::ST_STOPPED;
+		m_state.RegisterWithInitValue([this](EnAppState state)
+			{
+				SetAppState(state);
+			});
+	}
 
-	m_state.RegisterWithInitValue([this](EnAppState state)
-		{
-			SetAppState(state);
-		});
+	// ---- 调整窗口大小 ----
+	{
+		CRect rc;
+		GetWindowRect(&rc);
+
+		// 设置新宽高
+		int newWidth = 1024;
+		int newHeight = 768;
+
+		// 移动窗口到原来的位置，并改变大小
+		SetWindowPos(nullptr, rc.left, rc.top, newWidth, newHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+	}
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
