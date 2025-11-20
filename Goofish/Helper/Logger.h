@@ -19,7 +19,7 @@ class Logger
 {
 public:
 	enum class Level { Info, Warning, Error };
-	using Callback = std::function<void(const std::string& formattedMessage)>;
+	using Callback = std::function<void(const Level level,const std::string& formattedMessage)>;
 
 	// 可选提供文件路径以写入日志文件；可多次调用但只有第一次打开文件有效
 	static void Init(const std::string& filePath = "");
