@@ -331,7 +331,7 @@ EnHandleResult WebSocketClient::OnReceive(HP_Client pSender, CONNID dwConnID, co
 EnHandleResult WebSocketClient::OnClose(HP_Client pSender, CONNID dwConnID, EnSocketOperation enOperation, int iErrorCode)
 {
 	std::string content = "OP: " + std::to_string(enOperation) + ", CODE: " + std::to_string(iErrorCode);
-	LOG_INFO(MODULE_INFO, GetInstanceExtraData() + content);
+	LOG_ERROR(MODULE_INFO, GetInstanceExtraData() + content);
 	if (m_instance && m_instance->m_onClose)
 		m_instance->m_onClose(GetInstanceExtraData(), dwConnID, enOperation, iErrorCode);
 	return HR_OK;
@@ -398,7 +398,7 @@ EnHttpParseResult WebSocketClient::OnUpgrade(HP_HttpClient pSender, CONNID dwCon
 
 EnHttpParseResult WebSocketClient::OnParseError(HP_HttpClient pSender, CONNID dwConnID, int iErrorCode, LPCSTR lpszErrorDesc)
 {
-	LOG_INFO(MODULE_INFO, GetInstanceExtraData() + "(" + std::to_string(iErrorCode) + ") : " + lpszErrorDesc);
+	LOG_ERROR(MODULE_INFO, GetInstanceExtraData() + "(" + std::to_string(iErrorCode) + ") : " + lpszErrorDesc);
 	return HPR_OK;
 }
 

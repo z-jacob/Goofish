@@ -252,8 +252,8 @@ void CGoofishDlg::OnBtnStart()
 	m_state = EnAppState::ST_STARTING;
 
 	//wss://echo.websocket.org
-	//if (m_websocketClientSystem->Connect("wss://wss-goofish.dingtalk.com"))
-	if (m_websocketClientSystem->Connect("wss://echo.websocket.org"))
+	if (m_websocketClientSystem->Connect("wss://wss-goofish.dingtalk.com"))
+	//if (m_websocketClientSystem->Connect("wss://echo.websocket.org"))
 	{
 
 	}
