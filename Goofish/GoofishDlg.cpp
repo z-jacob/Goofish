@@ -94,9 +94,9 @@ BOOL CGoofishDlg::OnInitDialog()
 		// 按钮尺寸和位置
 		const int btnWidth = m_uiModel->GetButtonWidth();
 		const int btnHeight = m_uiModel->GetButtonHeight();
-		const int btnTop = 10 * Utils::GetDpi();
-		const int btnSpacing = 10 * Utils::GetDpi();
-		const int btnLeftStart = 20 * Utils::GetDpi();
+		const int btnTop = (int)(10 * Utils::GetDpi());
+		const int btnSpacing = (int)(10 * Utils::GetDpi());
+		const int btnLeftStart = (int)(20 * Utils::GetDpi());
 
 		// 创建 Stop 按钮
 		m_btnStop.Create(_T("Stop"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
