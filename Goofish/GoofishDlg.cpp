@@ -35,6 +35,7 @@
 #endif
 #include "System/GoofishHttpSystem.h"
 #include "Helper/Logger.h"
+#include "JSON/CJsonObject.hpp"
 
 
 // CGoofishDlg 对话框
@@ -83,10 +84,12 @@ BOOL CGoofishDlg::OnInitDialog()
 	// ---- 获取模型 ----
 	{
 		m_uiModel = this->GetModel<UIModel>();
+		m_configModel = this->GetModel<ConfigModel>();
 	}
 
 	// ---- 获取系统 ----
 	{
+		m_goofishHttpSystem = this->GetSystem<GoofishHttpSystem>();
 		m_websocketClientSystem = this->GetSystem<WebsocketClientSystem>();
 	}
 
@@ -258,33 +261,62 @@ void CGoofishDlg::OnBtnStart()
 	// 启动一个循环线程
 	if (!m_workerRunning) {
 		m_workerRunning = true;
-		m_workerThread = std::thread([this]() {
-			while (m_workerRunning) {
+		m_workerThread = std::thread([this]()
+			{
+				while (m_workerRunning) {
 
-				// 取出Cookie
-				auto cookie = "t=5e247d2ff89af2e56b4aeebfdb3ef501; cna=9/CGIWtgdRkCAQAAAAAO+iAb; tracknick=yllove1989; havana_lgc2_77=eyJoaWQiOjI3MDM5MjM0NTAsInNnIjoiZDY0OTFiNzUzZTliNjNjZmZiMjI0MzE1NmQ3ZmZkZDciLCJzaXRlIjo3NywidG9rZW4iOiIxNEZpQlFBcVJhNGpOU2tSZ0hjY0V6QSJ9; _hvn_lgc_=77; havana_lgc_exp=1764606397378; cookie2=10d4943562d7d9d07a2f1aa15ef2ee45; mtop_partitioned_detect=1; _m_h5_tk=dbb28585a54083987ab5c77e052d1473_1763739200056; _m_h5_tk_enc=40080f90d65d4d8fd43c145d5a7bbfba; xlly_s=1; _samesite_flag_=true; sgcookie=E100Vfm6R5sj9ZSJJGsuFO4JzXjtZoK4nA60hqz3Dci0klrN7pm%2BK9ck12doRC2Q7of7r8ty%2FX3aROzVhJR4Gj5UokOqz5bc5isdiWT68Wmb8K0%3D; csg=dcfb326c; _tb_token_=315a1e433b86b; unb=2703923450; sdkSilent=1763816242049; tfstk=g0UsQrApudv63Nq-fq5eV_ax2m0Xc67ycIGYZSLwMV39HKF-LRkZ7sbjHRDU7APZWZajSyrwuAWilSerlTWPzaPgsm0AUTW0RoLZyjx9kKkxvH3qGrwTKENgsqAHTKIzv5bjn8AZHqexJDhrgqdt6-Qp9vcmMdhvW6NKKvh9BFHtJvhrMEHYHqCQ9vcxkxexX6NKKj3xHb2hYjQZN51uUcAnCCxshvTvkyGdnYN1bEGUJfGSe5U6kEn-1cM86v6T2VCxvSmboIYjc5Eunbe9BTogMkwI1q_eX4FQD8G3WaJstlPLavFWiEVi5ji-kDOvkWgip0UKyapItkFaDP26GEhg7zojED1vomuLz0E8CIfu9VhYn04VEFDTM74u44_eX4FQD8Zf4xLrFqCJcBiklXMPO6tDmKg8VtP-XUziXXc6N61BI8nttXNRO6t50chn1E5CO3DN.";
-				std::string response;
-				if (this->GetSystem<GoofishHttpSystem>()->Login(cookie, response))
-				{
-					LOG_INFO(MODULE_INFO, "Login Response: " + response);
+					// 取出Cookie
+					auto cookie = "t=5e247d2ff89af2e56b4aeebfdb3ef501; cna=9/CGIWtgdRkCAQAAAAAO+iAb; tracknick=yllove1989; havana_lgc2_77=eyJoaWQiOjI3MDM5MjM0NTAsInNnIjoiZDY0OTFiNzUzZTliNjNjZmZiMjI0MzE1NmQ3ZmZkZDciLCJzaXRlIjo3NywidG9rZW4iOiIxNEZpQlFBcVJhNGpOU2tSZ0hjY0V6QSJ9; _hvn_lgc_=77; havana_lgc_exp=1764606397378; cookie2=10d4943562d7d9d07a2f1aa15ef2ee45; xlly_s=1; _samesite_flag_=true; sgcookie=E100Vfm6R5sj9ZSJJGsuFO4JzXjtZoK4nA60hqz3Dci0klrN7pm%2BK9ck12doRC2Q7of7r8ty%2FX3aROzVhJR4Gj5UokOqz5bc5isdiWT68Wmb8K0%3D; csg=dcfb326c; _tb_token_=315a1e433b86b; unb=2703923450; sdkSilent=1763816242049; mtop_partitioned_detect=1; _m_h5_tk=88971805fec81f1683946c2d60d75a2b_1763745012004; _m_h5_tk_enc=b7f6c451654e1c2a056e6d885547dfb8; tfstk=geZEa66QnMIUFdR1A5ny352UIknKq05XUuGSE82odXcHAHOu7SVtOzaIOLzaZ53ItywBpPFbnHZCJ0trv0nlGssfcJwK20Y1bP1o9R2tEOMhGkfvd0nlG1T6q2Iq2W5zufouIOkSFeDuZvDGQxkoqH0kxFAi6Ymoq2xnsdDIFYDoE3XaIfHoqbVoqOoi6YmoZ7moNJ3-RFGn-OTtZ5PllvgEiJcw0REZKVLLKf-kqlzZ8jAj_3xubvyy-A5D0aG0kXgji5j6Y0yiUWG_iixZjqzYFYPFYHmQSPEKAl12H2PrOqqs7BYn3DlEok093nyErPrZAkfJkRwZtqo_5NCIPDPUkj3hW1FzQXNuYVAF1babCk0ai1taw4zYFYPFYHVc4pR-Igb72yRkz2DtQj6NQe_gE9p0AkckyU3MsAlf3jTJy2DtQj6NQUL-SNDZGtlf.";
+					std::string refreshToken, accessToken;
+					if (!m_goofishHttpSystem->Login(cookie, m_configModel->deviceId, refreshToken, accessToken))
+					{
+						LOG_ERROR(MODULE_INFO, "Login fail.");
+						std::this_thread::sleep_for(std::chrono::seconds(5));
+						continue;
+					}
+
+					LOG_INFO(MODULE_INFO, "refreshToken:" + refreshToken);
+					LOG_INFO(MODULE_INFO, "accessToken:" + accessToken);
+
+					if (!m_websocketClientSystem->Connect("wss://wss-goofish.dingtalk.com"))
+					{
+						LOG_ERROR(MODULE_INFO, "Connect wss-goofish.dingtalk.com fail.");
+						std::this_thread::sleep_for(std::chrono::seconds(5));
+						continue;
+					}
+
+
+					std::this_thread::sleep_for(std::chrono::seconds(5));
+
+
+					neb::CJsonObject rootObj;
+					rootObj.Add("lwp", "/reg");
+
+					// 构造 headers 子对象
+					neb::CJsonObject headersObj;
+					headersObj.Add("cache-header", "app-key token ua wv");
+					headersObj.Add("app-key", m_configModel->appKeyStr);
+					headersObj.Add("token", accessToken);
+					headersObj.Add("ua", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 DingTalk(2.2.0) OS(Windows/10) Browser(Chrome/142.0.0.0) DingWeb/2.2.0 IMPaaS DingWeb/2.2.0");
+					headersObj.Add("dt", "j");
+					headersObj.Add("wv", "im:3,au:3,sy:6");
+					headersObj.Add("sync", "0,0;0;0;");
+					headersObj.Add("did", m_configModel->deviceId);
+					headersObj.Add("mid", "4001763738942195 0");
+
+					// 添加 headers 到根对象
+					rootObj.Add("headers", headersObj);
+
+					// 输出 JSON 字符串
+					std::string jsonStr = rootObj.ToString();
+					// jsonStr 即为组装好的 JSON 数据
+					m_websocketClientSystem->Send(jsonStr);
+
+					break;
 				}
-
-				std::this_thread::sleep_for(std::chrono::seconds(60));
-			}
-		});
+			});
 	}
 
-	/*
-	//wss://echo.websocket.org
-	if (m_websocketClientSystem->Connect("wss://wss-goofish.dingtalk.com"))
-	//if (m_websocketClientSystem->Connect("wss://echo.websocket.org"))
-	{
-
-	}
-	else
-	{
-		m_state = EnAppState::ST_STOPPED;
-	}*/
 }
 
 void CGoofishDlg::OnBtnRestart()

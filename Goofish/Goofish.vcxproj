@@ -191,6 +191,8 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="JSON\cJSON.h" />
+    <ClInclude Include="JSON\CJsonObject.hpp" />
     <ClInclude Include="System\GoofishHttpSystem.h" />
     <ClInclude Include="Model\ConfigModel.h" />
     <ClInclude Include="System\CookieSystem.h" />
@@ -235,6 +237,8 @@
     <ClInclude Include="Model\UIModel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="JSON\cJSON.cpp" />
+    <ClCompile Include="JSON\CJsonObject.cpp" />
     <ClCompile Include="System\GoofishHttpSystem.cpp" />
     <ClCompile Include="Model\ConfigModel.cpp" />
     <ClCompile Include="System\CookieSystem.cpp" />

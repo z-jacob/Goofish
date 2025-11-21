@@ -2,6 +2,7 @@
 #include "../Helper/Utils.h"
 #include "../Helper/Logger.h"
 #include "../Helper/HttpClient.h"
+#include "../JSON/CJsonObject.hpp"
 
 void GoofishHttpSystem::OnInit()
 {
@@ -16,8 +17,12 @@ void GoofishHttpSystem::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 {
 }
 
-bool GoofishHttpSystem::Login(std::string cookie, std::string& response)
+bool GoofishHttpSystem::Login(std::string cookie, std::string deviceId, std::string& refreshToken, std::string& accessToken)
 {
+
+	refreshToken = "";
+	accessToken = "";
+
 	LOG_INFO(MODULE_INFO, "cookie:" + cookie);
 
 
@@ -32,7 +37,6 @@ bool GoofishHttpSystem::Login(std::string cookie, std::string& response)
 
 	LOG_INFO(MODULE_INFO, "获取当前设备13位时间戳:" + timeStamp);
 
-	std::string deviceId = "D5C2B837-1EA7-427B-8110-2DC5F27B911D-2703923450";
 
 	LOG_INFO(MODULE_INFO, "deviceId:" + deviceId);
 
@@ -68,8 +72,20 @@ bool GoofishHttpSystem::Login(std::string cookie, std::string& response)
 	{
 		HttpClient::Response resp;
 		bool ok = HttpClient::Post(Utils::StringToWString(url), body, resp, headers, 20000);
-		response = Utils::WStringToString(Utils::StringToWString(resp.body));
-		return true;
+		neb::CJsonObject root(resp.body);
+
+		neb::CJsonObject dataObj;
+		if (!root.Get("data", dataObj))
+		{
+			LOG_INFO(MODULE_INFO, "Parse response json fail.");
+			return false;
+		}
+
+
+		dataObj.Get("accessToken", accessToken);
+		dataObj.Get("refreshToken", refreshToken);
+
+		return !accessToken.empty() && !refreshToken.empty();
 	}
 	catch (std::exception e)
 	{

@@ -10,6 +10,7 @@
 
 #include "System/WebsocketClientSystem.h"
 #include "Model/UIModel.h"
+#include "System/GoofishHttpSystem.h"
 
 enum EnAppState
 {
@@ -51,8 +52,10 @@ protected:
 
 
     std::shared_ptr<WebsocketClientSystem> m_websocketClientSystem;
+    std::shared_ptr<GoofishHttpSystem> m_goofishHttpSystem;
 
     std::shared_ptr<UIModel> m_uiModel;
+	std::shared_ptr<ConfigModel> m_configModel;
 
     std::thread m_workerThread;
     std::atomic<bool> m_workerRunning{false};

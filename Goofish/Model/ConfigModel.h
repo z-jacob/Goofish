@@ -9,7 +9,7 @@ protected:
 public:
 	std::string appKey;
 	std::string appKeyStr;
-
+	std::string deviceId;
 
 };
 
