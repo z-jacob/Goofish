@@ -5,6 +5,6 @@
 class GoofishHttp
 {
 public:
-	static std::string Login(std::wstring cookie);
+	static std::wstring Login(std::wstring cookie);
 };
 

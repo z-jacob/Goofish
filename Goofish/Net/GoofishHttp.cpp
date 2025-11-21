@@ -3,16 +3,16 @@
 
 #include "../Helper/Logger.h"
 
-std::string GoofishHttp::Login(std::wstring cookie)
+std::wstring GoofishHttp::Login(std::wstring cookie)
 {
 	LOG_INFO(MODULE_INFO, "Cookie:" + Utils::WStringToString(cookie));
 
 
-	auto _m_h5_tk = Utils::ExtractBetween(Utils::WStringToString(cookie), "_m_h5_tk=", ";");
+	auto _m_h5_tk = Utils::ExtractBetween(Utils::WStringToString(cookie), "_m_h5_tk=", "_");
 	if (_m_h5_tk.length() <= 0)
 	{
 		LOG_ERROR(MODULE_INFO, "Cookie数据缺失_m_h5_tk参数。");
-		return "";
+		return L"";
 	}
 
 	auto timeStamp = Utils::GetTimestamp13();
@@ -25,7 +25,7 @@ std::string GoofishHttp::Login(std::wstring cookie)
 
 	std::string appKeyStr = "444e9908a51d1cb236a27862abc769c9";
 
-	LOG_INFO(MODULE_INFO, "appKey:" + appKeyStr);
+	LOG_INFO(MODULE_INFO, "appKeyStr:" + appKeyStr);
 
 	std::string deviceId = "D5C2B837-1EA7-427B-8110-2DC5F27B911D-2703923450";
 
@@ -36,8 +36,6 @@ std::string GoofishHttp::Login(std::wstring cookie)
 	LOG_INFO(MODULE_INFO, "MD5Hash加密前数据:" + data);
 
 
-	//dbb28585a54083987ab5c77e052d1473&1763733511356&34839810&{"appKey":"444e9908a51d1cb236a27862abc769c9","deviceId":"D5C2B837-1EA7-427B-8110-2DC5F27B911D-2703923450"}
-
 	auto sign = Utils::MD5Hash(data);
 
 	LOG_INFO(MODULE_INFO, "MD5Hash:" + sign);
@@ -47,7 +45,6 @@ std::string GoofishHttp::Login(std::wstring cookie)
 
 	LOG_INFO(MODULE_INFO, "Login请求URL:" + url);
 
-	// body is already url-encoded in the provided example
 	std::string body = "data=%7B%22appKey%22%3A%22" + appKeyStr + "%22%2C%22deviceId%22%3A%22" + deviceId + "%22%7D";
 
 
@@ -66,13 +63,6 @@ std::string GoofishHttp::Login(std::wstring cookie)
 
 	HttpClient::Response resp;
 	bool ok = HttpClient::Post(Utils::StringToWString(url), body, resp, headers, 20000);
-
-	if (ok) {
-		LOG_INFO(MODULE_INFO, "pc.login.token sucess#\nstatus: " + std::to_string(resp.status) + "\nBody size:" + std::to_string(resp.body.size()));
-		return resp.body;
-	}
-	else {
-		LOG_ERROR(MODULE_INFO, "pc.login.token failed");
-		return "";
-	}
+	LOG_INFO(MODULE_INFO, "Response: " + Utils::WStringToString(Utils::StringToWString(resp.body)));
+	return Utils::StringToWString(resp.body);
 }
