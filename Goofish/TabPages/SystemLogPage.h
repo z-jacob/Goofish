@@ -1,6 +1,7 @@
 #pragma once
 #include "TabPageBase.h"
 
+
 class CSystemLogPage : public CTabPageBase
 {
 public:

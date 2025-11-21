@@ -8,6 +8,7 @@ void CSystemLogPage::CreateContent()
 	CRect rc;
 	GetClientRect(&rc);
 
+	//STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 	// 初始创建，填满整个页面
 	m_listLog.Create(
 		WS_CHILD | WS_VISIBLE | WS_BORDER | LBS_NOTIFY | WS_VSCROLL,
