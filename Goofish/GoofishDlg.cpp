@@ -9,7 +9,6 @@
 #include "System/WebsocketClientSystem.h"
 #include "Helper/WebsocketEvents.h"
 #include "Helper/ProcessHelper.h"
-#include "Helper/Logger.h"
 
 #include "TabPages/DashboardPage.h"
 #include "TabPages/AccountPage.h"
@@ -28,11 +27,13 @@
 #include "Helper/Utils.h"
 #include "Model/FontModel.h"
 
-
+#include <thread>
+#include <atomic>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#include "Net/GoofishHttp.h"
 
 
 // CGoofishDlg 对话框
@@ -245,12 +246,32 @@ void CGoofishDlg::OnBtnStop()
 {
 	m_state = EnAppState::ST_STOPPING;
 	m_websocketClientSystem->Close();
+	m_workerRunning = false;
+	if (m_workerThread.joinable()) m_workerThread.join();
 }
 
 void CGoofishDlg::OnBtnStart()
 {
 	m_state = EnAppState::ST_STARTING;
 
+	// 启动一个循环线程
+	if (!m_workerRunning) {
+		m_workerRunning = true;
+		m_workerThread = std::thread([this]() {
+			while (m_workerRunning) {
+
+				// 取出Cookie
+				auto cookie = L"t=5e247d2ff89af2e56b4aeebfdb3ef501; cna=9/CGIWtgdRkCAQAAAAAO+iAb; tracknick=yllove1989; havana_lgc2_77=eyJoaWQiOjI3MDM5MjM0NTAsInNnIjoiZDY0OTFiNzUzZTliNjNjZmZiMjI0MzE1NmQ3ZmZkZDciLCJzaXRlIjo3NywidG9rZW4iOiIxNEZpQlFBcVJhNGpOU2tSZ0hjY0V6QSJ9; _hvn_lgc_=77; havana_lgc_exp=1764606397378; cookie2=10d4943562d7d9d07a2f1aa15ef2ee45; mtop_partitioned_detect=1; _m_h5_tk=dbb28585a54083987ab5c77e052d1473_1763739200056; _m_h5_tk_enc=40080f90d65d4d8fd43c145d5a7bbfba; xlly_s=1; _samesite_flag_=true; sgcookie=E100Vfm6R5sj9ZSJJGsuFO4JzXjtZoK4nA60hqz3Dci0klrN7pm%2BK9ck12doRC2Q7of7r8ty%2FX3aROzVhJR4Gj5UokOqz5bc5isdiWT68Wmb8K0%3D; csg=dcfb326c; _tb_token_=315a1e433b86b; unb=2703923450; sdkSilent=1763816242049; tfstk=g0UsQrApudv63Nq-fq5eV_ax2m0Xc67ycIGYZSLwMV39HKF-LRkZ7sbjHRDU7APZWZajSyrwuAWilSerlTWPzaPgsm0AUTW0RoLZyjx9kKkxvH3qGrwTKENgsqAHTKIzv5bjn8AZHqexJDhrgqdt6-Qp9vcmMdhvW6NKKvh9BFHtJvhrMEHYHqCQ9vcxkxexX6NKKj3xHb2hYjQZN51uUcAnCCxshvTvkyGdnYN1bEGUJfGSe5U6kEn-1cM86v6T2VCxvSmboIYjc5Eunbe9BTogMkwI1q_eX4FQD8G3WaJstlPLavFWiEVi5ji-kDOvkWgip0UKyapItkFaDP26GEhg7zojED1vomuLz0E8CIfu9VhYn04VEFDTM74u44_eX4FQD8Zf4xLrFqCJcBiklXMPO6tDmKg8VtP-XUziXXc6N61BI8nttXNRO6t50chn1E5CO3DN.";
+
+				auto response = GoofishHttp::Login(cookie);
+
+
+				std::this_thread::sleep_for(std::chrono::seconds(60));
+			}
+		});
+	}
+
+	/*
 	//wss://echo.websocket.org
 	if (m_websocketClientSystem->Connect("wss://wss-goofish.dingtalk.com"))
 	//if (m_websocketClientSystem->Connect("wss://echo.websocket.org"))
@@ -260,7 +281,7 @@ void CGoofishDlg::OnBtnStart()
 	else
 	{
 		m_state = EnAppState::ST_STOPPED;
-	}
+	}*/
 }
 
 void CGoofishDlg::OnBtnRestart()

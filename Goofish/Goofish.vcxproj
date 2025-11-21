@@ -192,6 +192,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CookieSystem.h" />
+    <ClInclude Include="Net\GoofishHttp.h" />
     <ClInclude Include="Model\FontModel.h" />
     <ClInclude Include="Model\CookieModel.h" />
     <ClInclude Include="Helper\Utils.h" />
@@ -201,6 +202,7 @@
     <ClInclude Include="HPSocket\HPSocket4C.h" />
     <ClInclude Include="HPSocket\HPTypeDef.h" />
     <ClInclude Include="HPSocket\SocketInterface.h" />
+    <ClInclude Include="Net\HttpClient.h" />
     <ClInclude Include="TabPages\TabControlEx.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Goofish.h" />
@@ -233,9 +235,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CookieSystem.cpp" />
+    <ClCompile Include="Net\GoofishHttp.cpp" />
     <ClCompile Include="Helper\Utils.cpp" />
     <ClCompile Include="Model\FontModel.cpp" />
     <ClCompile Include="Model\CookieModel.cpp" />
+    <ClCompile Include="Net\HttpClient.cpp" />
     <ClCompile Include="TabPages\TabControlEx.cpp" />
     <ClCompile Include="Goofish.cpp" />
     <ClCompile Include="GoofishArchitecture.cpp" />

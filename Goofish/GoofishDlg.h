@@ -5,6 +5,8 @@
 #include "Helper/JFramework.h"
 #include "TabPages/TabControlEx.h"
 #include <memory>
+#include <thread>
+#include <atomic>
 
 #include "System/WebsocketClientSystem.h"
 #include "Model/UIModel.h"
@@ -51,6 +53,9 @@ protected:
     std::shared_ptr<WebsocketClientSystem> m_websocketClientSystem;
 
     std::shared_ptr<UIModel> m_uiModel;
+
+    std::thread m_workerThread;
+    std::atomic<bool> m_workerRunning{false};
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();

@@ -132,6 +132,12 @@
     <ClInclude Include="Model\UIModel.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Net\HttpClient.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Net\GoofishHttp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Goofish.cpp">
@@ -213,6 +219,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Model\UIModel.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Net\HttpClient.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Net\GoofishHttp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
