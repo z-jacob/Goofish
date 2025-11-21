@@ -29,14 +29,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
     <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
     <UseOfMfc>Static</UseOfMfc>
@@ -44,14 +44,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
     <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
     <UseOfMfc>Static</UseOfMfc>
@@ -143,7 +143,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;HPSOCKET_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -171,7 +171,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;HPSOCKET_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -191,8 +191,9 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CookieSystem.h" />
-    <ClInclude Include="Net\GoofishHttp.h" />
+    <ClInclude Include="System\GoofishHttpSystem.h" />
+    <ClInclude Include="Model\ConfigModel.h" />
+    <ClInclude Include="System\CookieSystem.h" />
     <ClInclude Include="Model\FontModel.h" />
     <ClInclude Include="Model\CookieModel.h" />
     <ClInclude Include="Helper\Utils.h" />
@@ -202,7 +203,7 @@
     <ClInclude Include="HPSocket\HPSocket4C.h" />
     <ClInclude Include="HPSocket\HPTypeDef.h" />
     <ClInclude Include="HPSocket\SocketInterface.h" />
-    <ClInclude Include="Net\HttpClient.h" />
+    <ClInclude Include="Helper\HttpClient.h" />
     <ClInclude Include="TabPages\TabControlEx.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Goofish.h" />
@@ -234,12 +235,13 @@
     <ClInclude Include="Model\UIModel.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CookieSystem.cpp" />
-    <ClCompile Include="Net\GoofishHttp.cpp" />
+    <ClCompile Include="System\GoofishHttpSystem.cpp" />
+    <ClCompile Include="Model\ConfigModel.cpp" />
+    <ClCompile Include="System\CookieSystem.cpp" />
     <ClCompile Include="Helper\Utils.cpp" />
     <ClCompile Include="Model\FontModel.cpp" />
     <ClCompile Include="Model\CookieModel.cpp" />
-    <ClCompile Include="Net\HttpClient.cpp" />
+    <ClCompile Include="Helper\HttpClient.cpp" />
     <ClCompile Include="TabPages\TabControlEx.cpp" />
     <ClCompile Include="Goofish.cpp" />
     <ClCompile Include="GoofishArchitecture.cpp" />

@@ -1,6 +1,7 @@
 #pragma once
-#include "System/WebsocketClientSystem.h"
-#include "Model/CookieModel.h"
+#include "WebsocketClientSystem.h"
+#include "../Model/CookieModel.h"
+
 class CookieSystem : public JFramework::AbstractSystem
 {
 protected:

@@ -123,7 +123,7 @@
     <ClInclude Include="Model\CookieModel.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CookieSystem.h">
+    <ClInclude Include="System\CookieSystem.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Model\FontModel.h">
@@ -132,10 +132,13 @@
     <ClInclude Include="Model\UIModel.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Net\HttpClient.h">
+    <ClInclude Include="Helper\HttpClient.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Net\GoofishHttp.h">
+    <ClInclude Include="Model\ConfigModel.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="System\GoofishHttpSystem.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -209,7 +212,7 @@
     <ClCompile Include="Model\CookieModel.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="CookieSystem.cpp">
+    <ClCompile Include="System\CookieSystem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Model\FontModel.cpp">
@@ -221,10 +224,13 @@
     <ClCompile Include="Model\UIModel.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Net\HttpClient.cpp">
+    <ClCompile Include="Helper\HttpClient.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Net\GoofishHttp.cpp">
+    <ClCompile Include="Model\ConfigModel.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="System\GoofishHttpSystem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
