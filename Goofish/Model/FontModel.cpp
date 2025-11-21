@@ -3,7 +3,7 @@
 
 void FontModel::OnInit()
 {
-	int fontHeight = 13 * Utils::GetDpi(); // 96 是标准 DPI
+	int fontHeight = (int)(13 * Utils::GetDpi()); // 96 是标准 DPI
 
 	m_font.CreateFont(
 		fontHeight,                // 字体高度
