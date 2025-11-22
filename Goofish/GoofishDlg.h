@@ -11,6 +11,7 @@
 #include "System/WebsocketClientSystem.h"
 #include "Model/UIModel.h"
 #include "System/GoofishHttpSystem.h"
+#include "Model/CookieModel.h"
 
 enum EnAppState
 {
@@ -56,6 +57,7 @@ protected:
 
     std::shared_ptr<UIModel> m_uiModel;
 	std::shared_ptr<ConfigModel> m_configModel;
+    std::shared_ptr<CookieModel> m_cookieModel;
 
     std::thread m_workerThread;
     std::atomic<bool> m_workerRunning{false};

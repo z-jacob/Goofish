@@ -236,6 +236,7 @@
     <ClInclude Include="System\WebsocketClientSystem.h" />
     <ClInclude Include="Helper\WebSocketClient.h" />
     <ClInclude Include="Model\UIModel.h" />
+    <ClInclude Include="Utility\SQLiteUtility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Helper\cJSON.cpp" />
@@ -270,6 +271,7 @@
     <ClCompile Include="TabPages\TabPageBase.cpp" />
     <ClCompile Include="Helper\WebSocketClient.cpp" />
     <ClCompile Include="Model\UIModel.cpp" />
+    <ClCompile Include="Utility\SQLiteUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Goofish.rc" />

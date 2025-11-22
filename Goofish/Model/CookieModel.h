@@ -2,20 +2,18 @@
 #include "../Helper/JFramework.h"
 #include <map>
 #include <string>
-#include <iostream>
+#include "../Utility/SQLiteUtility.h"
+
 
 class CookieModel : public JFramework::AbstractModel
 {
 protected:
 	void OnInit() override;
 
-
 	void OnDeinit() override;
 
-	std::map<std::string,std::string> m_cookieMap;
-
+    std::shared_ptr<SQLiteUtility> m_sqliteUtility;
 public:
-	std::map<std::string, std::string> GetCookies();
 	bool AddCookie(std::string cookie);
 };
 

@@ -87,6 +87,13 @@ BOOL CGoofishDlg::OnInitDialog()
 	{
 		m_uiModel = this->GetModel<UIModel>();
 		m_configModel = this->GetModel<ConfigModel>();
+		m_cookieModel = this->GetModel<CookieModel>();
+	}
+
+
+	{
+		m_cookieModel->AddCookie("t=5e247d2ff89af2e56b4aeebfdb3ef501; cna=9/CGIWtgdRkCAQAAAAAO+iAb; tracknick=yllove1989; havana_lgc2_77=eyJoaWQiOjI3MDM5MjM0NTAsInNnIjoiZDY0OTFiNzUzZTliNjNjZmZiMjI0MzE1NmQ3ZmZkZDciLCJzaXRlIjo3NywidG9rZW4iOiIxNEZpQlFBcVJhNGpOU2tSZ0hjY0V6QSJ9; _hvn_lgc_=77; havana_lgc_exp=1764606397378; cookie2=10d4943562d7d9d07a2f1aa15ef2ee45; xlly_s=1; _samesite_flag_=true; sgcookie=E100Vfm6R5sj9ZSJJGsuFO4JzXjtZoK4nA60hqz3Dci0klrN7pm%2BK9ck12doRC2Q7of7r8ty%2FX3aROzVhJR4Gj5UokOqz5bc5isdiWT68Wmb8K0%3D; csg=dcfb326c; _tb_token_=315a1e433b86b; unb=2703923450; sdkSilent=1763816242049; mtop_partitioned_detect=1; _m_h5_tk=88971805fec81f1683946c2d60d75a2b_1763745012004; _m_h5_tk_enc=b7f6c451654e1c2a056e6d885547dfb8; tfstk=geZEa66QnMIUFdR1A5ny352UIknKq05XUuGSE82odXcHAHOu7SVtOzaIOLzaZ53ItywBpPFbnHZCJ0trv0nlGssfcJwK20Y1bP1o9R2tEOMhGkfvd0nlG1T6q2Iq2W5zufouIOkSFeDuZvDGQxkoqH0kxFAi6Ymoq2xnsdDIFYDoE3XaIfHoqbVoqOoi6YmoZ7moNJ3-RFGn-OTtZ5PllvgEiJcw0REZKVLLKf-kqlzZ8jAj_3xubvyy-A5D0aG0kXgji5j6Y0yiUWG_iixZjqzYFYPFYHmQSPEKAl12H2PrOqqs7BYn3DlEok093nyErPrZAkfJkRwZtqo_5NCIPDPUkj3hW1FzQXNuYVAF1babCk0ai1taw4zYFYPFYHVc4pR-Igb72yRkz2DtQj6NQe_gE9p0AkckyU3MsAlf3jTJy2DtQj6NQUL-SNDZGtlf.");
+
 	}
 
 	// ---- 获取系统 ----

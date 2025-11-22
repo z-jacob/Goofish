@@ -84,14 +84,14 @@ public:
 	{
 		HCRYPTPROV hProv = 0;
 		HCRYPTHASH hHash = 0;
-		BYTE hash[16] = {0};
+		BYTE hash[16] = { 0 };
 		DWORD hashLen = 16;
 		std::string result;
 		if (CryptAcquireContextA(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
 			if (CryptCreateHash(hProv, CALG_MD5, 0, 0, &hHash)) {
 				CryptHashData(hHash, reinterpret_cast<const BYTE*>(data.data()), static_cast<DWORD>(data.size()), 0);
 				if (CryptGetHashParam(hHash, HP_HASHVAL, hash, &hashLen, 0)) {
-					char buf[33] = {0};
+					char buf[33] = { 0 };
 					for (int i = 0; i < 16; ++i)
 						sprintf_s(buf + i * 2, 3, "%02x", hash[i]);
 					result = buf;
@@ -102,8 +102,6 @@ public:
 		}
 		return result;
 	}
-
-
 	static std::string ToString(const char* msg) {
 		return (msg && strlen(msg) > 0) ? std::string(msg) : std::string();
 	}

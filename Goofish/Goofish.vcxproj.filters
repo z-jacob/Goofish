@@ -150,6 +150,9 @@
     <ClInclude Include="Model\LogModel.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\SQLiteUtility.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Goofish.cpp">
@@ -246,6 +249,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Model\LogModel.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\SQLiteUtility.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
