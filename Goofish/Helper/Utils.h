@@ -7,12 +7,6 @@
 
 class Utils {
 public:
-
-	static std::string_view Utils::ExtractFileName(std::string_view path) {
-		size_t pos = path.find_last_of("/\\");
-		return (pos == std::string_view::npos) ? path : path.substr(pos + 1);
-	}
-
 	static float Utils::GetDpi()
 	{
 		HDC hDC = ::GetDC(nullptr); // 获取整个屏幕的 DC
@@ -117,6 +111,4 @@ public:
 		return msg;
 	}
 };
-
-#define MODULE_INFO ("| "+ std::string(Utils::ExtractFileName(__FILE__))+ ":" + std::string(__func__) + ":" + std::to_string(__LINE__))
 

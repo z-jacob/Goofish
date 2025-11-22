@@ -45,9 +45,6 @@
     <ClInclude Include="Helper\ProcessHelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Helper\Logger.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="TabPages\AccountPage.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -147,6 +144,12 @@
     <ClInclude Include="Helper\CJsonObject.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Helper\sqlite3.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Model\LogModel.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Goofish.cpp">
@@ -159,9 +162,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="System\WebsocketClientSystem.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Helper\Logger.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="TabPages\AccountPage.cpp">
@@ -240,6 +240,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Helper\CJsonObject.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper\sqlite3.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\LogModel.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

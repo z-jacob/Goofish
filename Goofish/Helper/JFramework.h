@@ -27,16 +27,164 @@
 
 #include <exception>
 #include <functional>
-#include <iostream> // For default logger
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
 #include <vector>
+#include <chrono>
+#include <ctime>
+
+#include <cstring>
+
+
+#define jmax(a,b)            (((a) > (b)) ? (a) : (b))
+
+#define jmin(a,b)            (((a) < (b)) ? (a) : (b))
+
+#define FILENAME_FROM_PATH(path) (strrchr((path), '/') ? strrchr((path), '/') + 1 : (strrchr((path), '\\') ? strrchr((path), '\\') + 1 : (path)))
+
+#define MODULE_INFO (std::string("| ") + FILENAME_FROM_PATH(__FILE__) + ":" + std::string(__func__) + ":" + std::to_string(__LINE__))
 
 namespace JFramework
 {
+	class Debug
+	{
+	public:
+		enum class Level { Info, Warning, Error };
+		using Callback = std::function<void(const Level level, const std::string& formattedMessage)>;
+
+		static void SetCallback(Callback cb)
+		{
+			std::lock_guard<std::mutex> lk(s_logMutex);
+			s_logCallback = std::move(cb);
+		}
+
+		static void Log(const std::string& message)
+		{
+			Debug::Log(Debug::Level::Info, message);
+		}
+
+		static void LogError(const std::string& message)
+		{
+			Debug::Log(Debug::Level::Error, message);
+		}
+
+		static void LogWarning(const std::string& message)
+		{
+			Debug::Log(Debug::Level::Warning, message);
+		}
+
+		static void Log(const std::string& moduleInfo, const std::string& message)
+		{
+			if (message.empty())
+			{
+				Debug::Log(Debug::Level::Info, moduleInfo);
+			}
+			else
+			{
+				Debug::Log(Debug::Level::Info, moduleInfo + " -> " + message);
+			}
+		}
+
+		static void LogError(const std::string& moduleInfo, const std::string& message)
+		{
+			if (message.empty())
+			{
+				Debug::Log(Debug::Level::Error, moduleInfo);
+			}
+			else
+			{
+				Debug::Log(Debug::Level::Error, moduleInfo + " -> " + message);
+			}
+		}
+
+		static void LogWarning(const std::string& moduleInfo, const std::string& message)
+		{
+			if (message.empty())
+			{
+				Debug::Log(Debug::Level::Warning, moduleInfo);
+			}
+			else
+			{
+				Debug::Log(Debug::Level::Warning, moduleInfo + " -> " + message);
+			}
+		}
+	private:
+
+		static std::string Format(Level level, const std::string& message)
+		{
+			using namespace std::chrono;
+			const auto now = system_clock::now();
+			const auto t = system_clock::to_time_t(now);
+			std::tm tm{};
+#if defined(_MSC_VER)
+			localtime_s(&tm, &t);
+#else
+			localtime_r(&t, &tm);
+#endif
+
+			const int ms = static_cast<int>(duration_cast<milliseconds>(now.time_since_epoch()).count() % 1000);
+
+			// 映射日志级别到字符串
+			constexpr const char* levelStrs[] = { "INFO", "WARNING", "ERROR" };
+			const char* levelStr = levelStrs[static_cast<size_t>(level)];
+
+			const size_t timePartLen = 23; // "2025-11-22 11:07:33.123"
+			const size_t fixedLen = 4;     // " | "
+			const size_t levelFieldLen = 10;
+			const size_t extra = 2;        // space + null terminator
+			const size_t bufSize = timePartLen + fixedLen + levelFieldLen + message.size() + extra;
+
+			// 使用 vector 或栈上缓冲（这里用 vector 动态适应长消息）
+			std::vector<char> buffer(bufSize);
+
+			// 先格式化时间部分（不含毫秒）
+			int len = std::snprintf(buffer.data(), bufSize,
+				"%04d-%02d-%02d %02d:%02d:%02d.%03d | %-10s %s",
+				tm.tm_year + 1900,
+				tm.tm_mon + 1,
+				tm.tm_mday,
+				tm.tm_hour,
+				tm.tm_min,
+				tm.tm_sec,
+				ms,
+				levelStr,
+				message.c_str()
+			);
+
+			// 安全检查
+			if (len < 0 || static_cast<size_t>(len) >= bufSize) {
+				// 极端情况下缓冲不足（理论上不会，除非消息超长）
+				// 回退：截断或抛异常，这里选择截断
+				return std::string(buffer.data(), jmin(bufSize - 1, static_cast<size_t>(jmax(0, len))));
+			}
+
+			return std::string(buffer.data(), static_cast<size_t>(len));
+		}
+
+		// 主调用接口
+		static void Log(Level level, const std::string& message)
+		{
+			std::string formatted = Format(level, message);
+			{
+				std::lock_guard<std::mutex> lk(s_logMutex);
+				if (s_logCallback) {
+					// 回调由调用者负责线程安全（若来自非 UI 线程，请通过 PostMessage/SendMessage 传回主线程）
+					s_logCallback(level, formatted);
+				}
+			}
+		}
+
+	private:
+		inline static std::mutex s_logMutex;
+		inline static Callback s_logCallback;
+		Debug() = delete;
+		~Debug() = delete;
+	};
+
 	// ================ 异常定义 ================
 	class FrameworkException : public std::runtime_error
 	{
@@ -1176,6 +1324,38 @@ namespace JFramework
 
 		void Deinit() final { this->OnDeinit(); }
 
+	protected:
+
+		void Log(const std::string& message)
+		{
+			Debug::Log(message);
+		}
+
+		void LogError(const std::string& message)
+		{
+			Debug::LogError(message);
+		}
+
+		void LogWarning(const std::string& message)
+		{
+			Debug::LogWarning(message);
+		}
+
+		void Log(const std::string& moduleInfo, const std::string& message)
+		{
+			Debug::Log(moduleInfo, message);
+		}
+
+		void LogError(const std::string& moduleInfo, const std::string& message)
+		{
+			Debug::LogError(moduleInfo, message);
+		}
+
+		void LogWarning(const std::string& moduleInfo, const std::string& message)
+		{
+			Debug::LogWarning(moduleInfo, message);
+		}
+
 	private:
 		void SetArchitecture(std::shared_ptr<IArchitecture> architecture) final
 		{
@@ -1204,6 +1384,36 @@ namespace JFramework
 
 		void HandleEvent(std::shared_ptr<IEvent> event) final { OnEvent(event); }
 
+	protected:
+		void Log(const std::string& message)
+		{
+			Debug::Log(message);
+		}
+
+		void LogError(const std::string& message)
+		{
+			Debug::LogError(message);
+		}
+
+		void LogWarning(const std::string& message)
+		{
+			Debug::LogWarning(message);
+		}
+
+		void Log(const std::string& moduleInfo, const std::string& message)
+		{
+			Debug::Log(moduleInfo, message);
+		}
+
+		void LogError(const std::string& moduleInfo, const std::string& message)
+		{
+			Debug::LogError(moduleInfo, message);
+		}
+
+		void LogWarning(const std::string& moduleInfo, const std::string& message)
+		{
+			Debug::LogWarning(moduleInfo, message);
+		}
 	private:
 		void SetArchitecture(std::shared_ptr<IArchitecture> architecture) final
 		{
@@ -1223,6 +1433,35 @@ namespace JFramework
 
 	protected:
 		virtual void OnEvent(std::shared_ptr<IEvent> event) = 0;
+		void Log(const std::string& message)
+		{
+			Debug::Log(message);
+		}
+
+		void LogError(const std::string& message)
+		{
+			Debug::LogError(message);
+		}
+
+		void LogWarning(const std::string& message)
+		{
+			Debug::LogWarning(message);
+		}
+
+		void Log(const std::string& moduleInfo, const std::string& message)
+		{
+			Debug::Log(moduleInfo, message);
+		}
+
+		void LogError(const std::string& moduleInfo, const std::string& message)
+		{
+			Debug::LogError(moduleInfo, message);
+		}
+
+		void LogWarning(const std::string& moduleInfo, const std::string& message)
+		{
+			Debug::LogWarning(moduleInfo, message);
+		}
 	};
 
 	template <typename _Ty>

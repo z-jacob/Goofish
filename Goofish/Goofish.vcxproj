@@ -193,6 +193,8 @@
   <ItemGroup>
     <ClInclude Include="Helper\cJSON.h" />
     <ClInclude Include="Helper\CJsonObject.hpp" />
+    <ClInclude Include="Helper\sqlite3.h" />
+    <ClInclude Include="Model\LogModel.h" />
     <ClInclude Include="System\GoofishHttpSystem.h" />
     <ClInclude Include="Model\ConfigModel.h" />
     <ClInclude Include="System\CookieSystem.h" />
@@ -212,7 +214,6 @@
     <ClInclude Include="GoofishArchitecture.h" />
     <ClInclude Include="GoofishDlg.h" />
     <ClInclude Include="Helper\JFramework.h" />
-    <ClInclude Include="Helper\Logger.h" />
     <ClInclude Include="Helper\ProcessHelper.h" />
     <ClInclude Include="Helper\WebsocketEvents.h" />
     <ClInclude Include="Resource.h" />
@@ -239,6 +240,8 @@
   <ItemGroup>
     <ClCompile Include="Helper\cJSON.cpp" />
     <ClCompile Include="Helper\CJsonObject.cpp" />
+    <ClCompile Include="Helper\sqlite3.c" />
+    <ClCompile Include="Model\LogModel.cpp" />
     <ClCompile Include="System\GoofishHttpSystem.cpp" />
     <ClCompile Include="Model\ConfigModel.cpp" />
     <ClCompile Include="System\CookieSystem.cpp" />
@@ -249,7 +252,6 @@
     <ClCompile Include="Goofish.cpp" />
     <ClCompile Include="GoofishArchitecture.cpp" />
     <ClCompile Include="GoofishDlg.cpp" />
-    <ClCompile Include="Helper\Logger.cpp" />
     <ClCompile Include="System\WebsocketClientSystem.cpp" />
     <ClCompile Include="TabPages\AccountPage.cpp" />
     <ClCompile Include="TabPages\AutoDeliverPage.cpp" />

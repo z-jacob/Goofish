@@ -27,16 +27,18 @@
 #include "Helper/Utils.h"
 #include "Model/FontModel.h"
 
+#include "System/GoofishHttpSystem.h"
+
+#include "Helper/CJsonObject.hpp"
+
+
+
 #include <thread>
 #include <atomic>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-#include "System/GoofishHttpSystem.h"
-#include "Helper/Logger.h"
-#include "Helper/CJsonObject.hpp"
-
 
 // CGoofishDlg 对话框
 
@@ -270,17 +272,17 @@ void CGoofishDlg::OnBtnStart()
 					std::string refreshToken, accessToken;
 					if (!m_goofishHttpSystem->Login(cookie, m_configModel->deviceId, refreshToken, accessToken))
 					{
-						LOG_ERROR(MODULE_INFO, "登录失败");
+						LogError(MODULE_INFO, "登录失败");
 						std::this_thread::sleep_for(std::chrono::seconds(5));
 						continue;
 					}
 
-					LOG_INFO(MODULE_INFO, "refreshToken:" + refreshToken);
-					LOG_INFO(MODULE_INFO, "accessToken:" + accessToken);
+					Log(MODULE_INFO, "refreshToken:" + refreshToken);
+					Log(MODULE_INFO, "accessToken:" + accessToken);
 
 					if (!m_websocketClientSystem->Connect("wss://wss-goofish.dingtalk.com"))
 					{
-						LOG_ERROR(MODULE_INFO, "Connect wss-goofish.dingtalk.com fail.");
+						LogError(MODULE_INFO, "Connect wss-goofish.dingtalk.com fail.");
 						std::this_thread::sleep_for(std::chrono::seconds(5));
 						continue;
 					}

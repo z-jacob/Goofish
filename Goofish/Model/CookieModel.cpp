@@ -1,6 +1,6 @@
 #include "CookieModel.h"
 #include "../Helper/Utils.h"
-#include "../Helper/Logger.h"
+
 
 void CookieModel::OnInit()
 {
@@ -21,7 +21,7 @@ bool CookieModel::AddCookie(std::string cookie)
 	auto unb = Utils::ExtractBetween(cookie, "unb=", ";");
 	if (unb.length() <= 0)
 	{
-		LOG_ERROR(MODULE_INFO, "Ìí¼ÓCookieÊ§°Ü£¬unbÎ´ÕÒµ½");
+		LogError(MODULE_INFO, "Ìí¼ÓCookieÊ§°Ü£¬unbÎ´ÕÒµ½");
 		return false;
 	}
 

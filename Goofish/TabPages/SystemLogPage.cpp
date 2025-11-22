@@ -1,5 +1,4 @@
 #include "SystemLogPage.h"
-#include "../Helper/Logger.h"
 
 
 
@@ -19,7 +18,7 @@ void CSystemLogPage::CreateContent()
 
 	m_listLog.SetFont(m_font);
 
-	Logger::SetCallback([this](const Logger::Level level, const std::string& formatted)
+	JFramework::Debug::SetCallback([this](const JFramework::Debug::Level level, const std::string& formatted)
 		{
 			size_t start = 0, end;
 			while ((end = formatted.find('\n', start)) != std::string::npos) {
@@ -40,8 +39,8 @@ void CSystemLogPage::CreateContent()
 		});
 
 
-	LOG_INFO(MODULE_INFO , "系统日志初始化完成");
-	LOG_INFO(MODULE_INFO , "正在监听系统事件...");
+	Log(MODULE_INFO , "系统日志初始化完成");
+	Log(MODULE_INFO , "正在监听系统事件...");
 
 }
 

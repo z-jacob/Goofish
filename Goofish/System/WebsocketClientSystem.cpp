@@ -5,8 +5,7 @@
 #include <cctype>
 #include <optional>
 #include "../Helper/WebsocketEvents.h"
-#include "../Helper/Utils.h"
-#include "../Helper/Logger.h"
+
 
 /**
  * @file WebsocketClientSystem.cpp
@@ -89,14 +88,14 @@ bool WebsocketClientSystem::Connect(const std::string& path)
 	try {
 		auto parsed = ParseWebsocketUrl(path);
 		if (!parsed) {
-			LOG_ERROR(MODULE_INFO, std::string("Connect(path) parse failed: invalid format: ") + path);
+			LogError(MODULE_INFO, std::string("Connect(path) parse failed: invalid format: ") + path);
 			return false;
 		}
 
 		return Connect(parsed->host, parsed->port, parsed->use_ssl);
 	}
 	catch (const std::exception& ex) {
-		LOG_ERROR(MODULE_INFO, std::string("Connect(path) exception: ") + ex.what());
+		LogError(MODULE_INFO, std::string("Connect(path) exception: ") + ex.what());
 		return false;
 	}
 }
@@ -104,7 +103,7 @@ bool WebsocketClientSystem::Connect(const std::string& path)
 bool WebsocketClientSystem::Send(const std::string& msg)
 {
 	if (!client.IsConnected()) {
-		LOG_ERROR(MODULE_INFO, "Send failed: not connected");
+		LogError(MODULE_INFO, "Send failed: not connected");
 		return false;
 	}
 	if (!client.SendText(msg)) {
@@ -120,7 +119,7 @@ void WebsocketClientSystem::Close()
 		client.Disconnect();
 	}
 	catch (const std::exception& ex) {
-		LOG_ERROR(MODULE_INFO, std::string("Close exception: ") + ex.what());
+		LogError(MODULE_INFO, std::string("Close exception: ") + ex.what());
 	}
 }
 
@@ -131,7 +130,7 @@ bool WebsocketClientSystem::IsConnected()
 		return client.IsConnected();
 	}
 	catch (const std::exception& ex) {
-		LOG_ERROR(MODULE_INFO, std::string("IsConnected exception: ") + ex.what());
+		LogError(MODULE_INFO, std::string("IsConnected exception: ") + ex.what());
 	}
 	return false;
 }
