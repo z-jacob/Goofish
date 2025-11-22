@@ -2,7 +2,7 @@
 #include "../Helper/Utils.h"
 #include "../Helper/Logger.h"
 #include "../Helper/HttpClient.h"
-#include "../JSON/CJsonObject.hpp"
+#include "../Helper/CJsonObject.hpp"
 
 void GoofishHttpSystem::OnInit()
 {
@@ -38,7 +38,7 @@ bool GoofishHttpSystem::Login(std::string cookie, std::string deviceId, std::str
 	LOG_INFO(MODULE_INFO, "获取当前设备13位时间戳:" + timeStamp);
 
 
-	LOG_INFO(MODULE_INFO, "deviceId:" + deviceId);
+	LOG_INFO(MODULE_INFO, "设备ID:" + deviceId);
 
 	auto data = _m_h5_tk + "&" + timeStamp + "&" + m_configModel->appKey + "&" + "{\"appKey\":\"" + m_configModel->appKeyStr + "\",\"deviceId\":\"" + deviceId + "\"}";
 
@@ -52,12 +52,12 @@ bool GoofishHttpSystem::Login(std::string cookie, std::string deviceId, std::str
 
 	std::string url = "https://h5api.m.goofish.com/h5/mtop.taobao.idlemessage.pc.login.token/1.0/?jsv=2.7.2&appKey=" + m_configModel->appKey + "&t=" + timeStamp + "&sign=" + sign + "&v=1.0&type=originaljson&accountSite=xianyu&dataType=json&timeout=20000&api=mtop.taobao.idlemessage.pc.login.token&sessionOption=AutoLoginOnly&spm_cnt=a21ybx.im.0.0&spm_pre=a21ybx.home.sidebar.2.4c053da6mkex26&log_id=4c053da6mkex26";
 
-	LOG_INFO(MODULE_INFO, "Login请求URL:" + url);
+	LOG_INFO(MODULE_INFO, "登录URL:" + url);
 
 	std::string body = "data=%7B%22appKey%22%3A%22" + m_configModel->appKeyStr + "%22%2C%22deviceId%22%3A%22" + deviceId + "%22%7D";
 
 
-	LOG_INFO(MODULE_INFO, "POST提交数据:" + body);
+	LOG_INFO(MODULE_INFO, "登录提交数据:" + body);
 
 
 	std::vector<std::pair<std::wstring, std::wstring>> headers;
@@ -77,7 +77,7 @@ bool GoofishHttpSystem::Login(std::string cookie, std::string deviceId, std::str
 		neb::CJsonObject dataObj;
 		if (!root.Get("data", dataObj))
 		{
-			LOG_INFO(MODULE_INFO, "Parse response json fail.");
+			LOG_ERROR(MODULE_INFO, "登录数据解析失败");
 			return false;
 		}
 
@@ -89,9 +89,7 @@ bool GoofishHttpSystem::Login(std::string cookie, std::string deviceId, std::str
 	}
 	catch (std::exception e)
 	{
-		std::string exceptionStr(e.what());
-		LOG_ERROR(MODULE_INFO, "Login请求异常:" + exceptionStr);
-		return false;
+		LOG_ERROR(MODULE_INFO, "登录异常:" + Utils::ToString(e.what()));
 	}
-
+	return false;
 }

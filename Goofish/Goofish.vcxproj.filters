@@ -141,10 +141,10 @@
     <ClInclude Include="System\GoofishHttpSystem.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="JSON\cJSON.h">
+    <ClInclude Include="Helper\cJSON.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="JSON\CJsonObject.hpp">
+    <ClInclude Include="Helper\CJsonObject.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -224,9 +224,6 @@
     <ClCompile Include="Model\FontModel.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Helper\Utils.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Model\UIModel.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -239,10 +236,10 @@
     <ClCompile Include="System\GoofishHttpSystem.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="JSON\cJSON.cpp">
+    <ClCompile Include="Helper\cJSON.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="JSON\CJsonObject.cpp">
+    <ClCompile Include="Helper\CJsonObject.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

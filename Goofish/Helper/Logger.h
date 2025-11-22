@@ -4,16 +4,10 @@
 
 #include "../Helper/Utils.h"
 
-inline std::string ToString(const char* msg) {
-	return (msg && strlen(msg) > 0) ? std::string(msg) : std::string();
-}
-inline std::string ToString(const std::string& msg) {
-	return msg;
-}
 
-#define LOG_INFO(prefix, message) Logger::Log(Logger::Level::Info, (ToString(message).length() > 0 ? (prefix + " -> " + ToString(message)) : prefix))
-#define LOG_WARNING(prefix, message) Logger::Log(Logger::Level::Warning, (ToString(message).length() > 0 ? (prefix + " -> " + ToString(message)) : prefix))
-#define LOG_ERROR(prefix, message) Logger::Log(Logger::Level::Error, (ToString(message).length() > 0 ? (prefix + " -> " + ToString(message)) : prefix))
+#define LOG_INFO(prefix, message) Logger::Log(Logger::Level::Info, (Utils::ToString(message).length() > 0 ? (prefix + " -> " + Utils::ToString(message)) : prefix))
+#define LOG_WARNING(prefix, message) Logger::Log(Logger::Level::Warning, (Utils::ToString(message).length() > 0 ? (prefix + " -> " + Utils::ToString(message)) : prefix))
+#define LOG_ERROR(prefix, message) Logger::Log(Logger::Level::Error, (Utils::ToString(message).length() > 0 ? (prefix + " -> " + Utils::ToString(message)) : prefix))
 
 class Logger
 {

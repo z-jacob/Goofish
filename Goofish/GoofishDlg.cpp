@@ -35,7 +35,7 @@
 #endif
 #include "System/GoofishHttpSystem.h"
 #include "Helper/Logger.h"
-#include "JSON/CJsonObject.hpp"
+#include "Helper/CJsonObject.hpp"
 
 
 // CGoofishDlg 对话框
@@ -270,7 +270,7 @@ void CGoofishDlg::OnBtnStart()
 					std::string refreshToken, accessToken;
 					if (!m_goofishHttpSystem->Login(cookie, m_configModel->deviceId, refreshToken, accessToken))
 					{
-						LOG_ERROR(MODULE_INFO, "Login fail.");
+						LOG_ERROR(MODULE_INFO, "登录失败");
 						std::this_thread::sleep_for(std::chrono::seconds(5));
 						continue;
 					}

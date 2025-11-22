@@ -7,8 +7,20 @@
 
 class Utils {
 public:
-	static float GetDpi();
-	static std::string_view ExtractFileName(std::string_view path);
+
+	static std::string_view Utils::ExtractFileName(std::string_view path) {
+		size_t pos = path.find_last_of("/\\");
+		return (pos == std::string_view::npos) ? path : path.substr(pos + 1);
+	}
+
+	static float Utils::GetDpi()
+	{
+		HDC hDC = ::GetDC(nullptr); // 获取整个屏幕的 DC
+		int dpiX = ::GetDeviceCaps(hDC, LOGPIXELSX); // 水平 DPI
+		int dpiY = ::GetDeviceCaps(hDC, LOGPIXELSY); // 垂直 DPI
+		::ReleaseDC(nullptr, hDC);
+		return dpiY / 96.0f;
+	}
 
 	// Convert UTF-8 std::string to UTF-16 std::wstring
 	static std::wstring StringToWString(const std::string& s)
@@ -95,6 +107,14 @@ public:
 			CryptReleaseContext(hProv, 0);
 		}
 		return result;
+	}
+
+
+	static std::string ToString(const char* msg) {
+		return (msg && strlen(msg) > 0) ? std::string(msg) : std::string();
+	}
+	static std::string ToString(const std::string& msg) {
+		return msg;
 	}
 };
 

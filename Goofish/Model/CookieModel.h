@@ -1,6 +1,6 @@
 #pragma once
 #include "../Helper/JFramework.h"
-#include <vector>
+#include <map>
 #include <string>
 #include <iostream>
 
@@ -12,7 +12,10 @@ protected:
 
 	void OnDeinit() override;
 
+	std::map<std::string,std::string> m_cookieMap;
+
 public:
-	std::vector<std::string> GetCookies();
+	std::map<std::string, std::string> GetCookies();
+	bool AddCookie(std::string cookie);
 };
 
