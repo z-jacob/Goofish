@@ -10,6 +10,6 @@ protected:
 	void OnEvent(std::shared_ptr<JFramework::IEvent> event) override;
 	std::shared_ptr<ConfigModel> m_configModel;
 public:
-	bool Login(std::string cookie, std::string deviceId, std::string& refreshToken, std::string& accessToken);
+	bool refresh_token(std::string cookie, std::string deviceId, std::string& refreshToken, std::string& accessToken);
 };
 

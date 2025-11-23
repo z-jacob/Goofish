@@ -1,4 +1,4 @@
-#include "GoofishHttpSystem.h"
+ï»¿#include "GoofishHttpSystem.h"
 #include "../Helper/Utils.h"
 
 #include "../Helper/HttpClient.h"
@@ -17,47 +17,64 @@ void GoofishHttpSystem::OnEvent(std::shared_ptr<JFramework::IEvent> event)
 {
 }
 
-bool GoofishHttpSystem::Login(std::string cookie, std::string deviceId, std::string& refreshToken, std::string& accessToken)
+bool GoofishHttpSystem::refresh_token(std::string cookie, std::string deviceId, std::string& refreshToken, std::string& accessToken)
 {
 
 	refreshToken = "";
 	accessToken = "";
 
-	Log(MODULE_INFO, "cookie:" + cookie);
+	Log(MODULE_INFO, "å¼€å§‹åˆ·æ–°token... (æ»‘å—éªŒè¯é‡è¯•æ¬¡æ•°: 0)");
+
+	Log(MODULE_INFO, "å¼€å§‹æ‰§è¡ŒCookieåˆ·æ–°ä»»åŠ¡...");
+
+	Log(MODULE_INFO, "========== Tokenåˆ·æ–°APIè°ƒç”¨è¯¦æƒ… ==========");
+
+	Log(MODULE_INFO, "APIæ¥å£:https://h5api.m.goofish.com/h5/mtop.taobao.idlemessage.pc.login.token/1.0/â ");
+
+
+	Log(MODULE_INFO, "========== ç­¾åè®¡ç®—ä¿¡æ¯ ==========");
 
 
 	auto _m_h5_tk = Utils::ExtractBetween(cookie, "_m_h5_tk=", "_");
 	if (_m_h5_tk.length() <= 0)
 	{
-		LogError(MODULE_INFO, "CookieÊı¾İÈ±Ê§_m_h5_tk²ÎÊı¡£");
+		LogError(MODULE_INFO, "Cookieæ•°æ®ç¼ºå¤±_m_h5_tkå‚æ•°ã€‚");
 		return L"";
 	}
 
+
+	Log(MODULE_INFO, "token (ä»_m_h5_tkæå–): " + _m_h5_tk + " (é•¿åº¦: " + std::to_string(_m_h5_tk.length()) + ")");
+
+
 	auto timeStamp = Utils::GetTimestamp13();
 
-	Log(MODULE_INFO, "»ñÈ¡µ±Ç°Éè±¸13Î»Ê±¼ä´Á:" + timeStamp);
+	Log(MODULE_INFO, "timestamp (t): " + timeStamp);
 
+	Log(MODULE_INFO, "appKey: " + m_configModel->appKey);
 
-	Log(MODULE_INFO, "Éè±¸ID:" + deviceId);
+	auto data_val = "{\"appKey\":\"" + m_configModel->appKeyStr + "\",\"deviceId\":\"" + deviceId + "\"}";
 
-	auto data = _m_h5_tk + "&" + timeStamp + "&" + m_configModel->appKey + "&" + "{\"appKey\":\"" + m_configModel->appKeyStr + "\",\"deviceId\":\"" + deviceId + "\"}";
+	Log(MODULE_INFO, "data_val: " + data_val);
 
-	Log(MODULE_INFO, "MD5Hash¼ÓÃÜÇ°Êı¾İ:" + data);
+	auto data = _m_h5_tk + "&" + timeStamp + "&" + m_configModel->appKey + "&" + data_val;
+
+	Log(MODULE_INFO, "è®¡ç®—ç­¾å: MD5(" + data + ")");
 
 
 	auto sign = Utils::MD5Hash(data);
 
-	Log(MODULE_INFO, "MD5Hash:" + sign);
+	Log(MODULE_INFO, "æœ€ç»ˆç­¾å: " + sign);
 
 
 	std::string url = "https://h5api.m.goofish.com/h5/mtop.taobao.idlemessage.pc.login.token/1.0/?jsv=2.7.2&appKey=" + m_configModel->appKey + "&t=" + timeStamp + "&sign=" + sign + "&v=1.0&type=originaljson&accountSite=xianyu&dataType=json&timeout=20000&api=mtop.taobao.idlemessage.pc.login.token&sessionOption=AutoLoginOnly&spm_cnt=a21ybx.im.0.0&spm_pre=a21ybx.home.sidebar.2.4c053da6mkex26&log_id=4c053da6mkex26";
 
-	Log(MODULE_INFO, "µÇÂ¼URL:" + url);
+	Log(MODULE_INFO, "ç™»å½•URL:" + url);
+
 
 	std::string body = "data=%7B%22appKey%22%3A%22" + m_configModel->appKeyStr + "%22%2C%22deviceId%22%3A%22" + deviceId + "%22%7D";
 
 
-	Log(MODULE_INFO, "µÇÂ¼Ìá½»Êı¾İ:" + body);
+	Log(MODULE_INFO, "ç™»å½•æäº¤æ•°æ®:" + body);
 
 
 	std::vector<std::pair<std::wstring, std::wstring>> headers;
@@ -77,7 +94,7 @@ bool GoofishHttpSystem::Login(std::string cookie, std::string deviceId, std::str
 		neb::CJsonObject dataObj;
 		if (!root.Get("data", dataObj))
 		{
-			LogError(MODULE_INFO, "µÇÂ¼Êı¾İ½âÎöÊ§°Ü");
+			LogError(MODULE_INFO, "ç™»å½•æ•°æ®è§£æå¤±è´¥");
 			return false;
 		}
 
@@ -89,7 +106,7 @@ bool GoofishHttpSystem::Login(std::string cookie, std::string deviceId, std::str
 	}
 	catch (std::exception e)
 	{
-		LogError(MODULE_INFO, "µÇÂ¼Òì³£:" + Utils::ToString(e.what()));
+		LogError(MODULE_INFO, "ç™»å½•å¼‚å¸¸:" + Utils::ToString(e.what()));
 	}
 	return false;
 }
