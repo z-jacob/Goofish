@@ -16,15 +16,8 @@ void CookieModel::OnDeinit()
 
 }
 
-bool CookieModel::AddCookie(std::string cookie)
+bool CookieModel::AddCookie(std::string id, std::string cookie)
 {
-	auto unb = Utils::ExtractBetween(cookie, "unb=", ";");
-	if (unb.length() <= 0)
-	{
-		LogError(MODULE_INFO, "添加Cookie失败，unb未找到");
-		return false;
-	}
-
 	// 创建cookie表
 	std::string sql = "CREATE TABLE IF NOT EXISTS cookies (\
 		id TEXT PRIMARY KEY,\
@@ -46,13 +39,13 @@ bool CookieModel::AddCookie(std::string cookie)
 	}
 
 	//检查是否已存在，如果存在，则更新
-	sql = "SELECT * FROM cookies WHERE id='" + unb + "'";
+	sql = "SELECT * FROM cookies WHERE id='" + id + "'";
 	std::vector<std::map<std::string, std::string>> resultList;
 	if (m_sqliteUtility->GetTableData(sql, resultList))
 	{
 		if (resultList.size() > 0)
 		{
-			sql = "UPDATE cookies SET value='" + cookie + "' WHERE id='" + unb + "'";
+			sql = "UPDATE cookies SET value='" + cookie + "' WHERE id='" + id + "'";
 			if (!m_sqliteUtility->ExecuteSQL(sql))
 			{
 				LogError(MODULE_INFO, "更新Cookie数据失败: " + sql + "\n" + m_sqliteUtility->GetDBErrorMsg());
@@ -64,7 +57,7 @@ bool CookieModel::AddCookie(std::string cookie)
 	}
 	else
 	{
-		sql = "INSERT INTO cookies(id, value) VALUES('" + unb + "', '" + cookie + "')";
+		sql = "INSERT INTO cookies(id, value) VALUES('" + id + "', '" + cookie + "')";
 		if (!m_sqliteUtility->ExecuteSQL(sql))
 		{
 			LogError(MODULE_INFO, "插入Cookie数据失败: " + sql + "\n" + m_sqliteUtility->GetDBErrorMsg());

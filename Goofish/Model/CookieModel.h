@@ -14,6 +14,6 @@ protected:
 
     std::shared_ptr<SQLiteUtility> m_sqliteUtility;
 public:
-	bool AddCookie(std::string cookie);
+	bool AddCookie(std::string id, std::string cookie);
 };
 
